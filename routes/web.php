@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LandingController;
 use App\Helpers;
 use App\Http\Controllers\Admin\BarcodeController;
 use App\Http\Controllers\Admin\MasterDataController;
@@ -12,17 +13,31 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 
-Route::get('/', function () {
-    // return view('welcome');
-    return redirect('/login');
-});
+// =================================================
+// 1. LANDING PAGE UTAMA (PUBLIC – DI LUAR AUTH)
+//    Akses: http://127.0.0.1:8000 → langsung ke landing
+// =================================================
+Route::get('/', [LandingController::class, 'index'])
+    ->name('landing'); // ← nama route hanya 'landing', bukan 'landing.blade.php'
 
+// Jika user sudah login, langsung arahkan ke dashboard sesuai role
+// (ini tetap di controller LandingController, bukan di route)
+
+// =================================================
+// 2. SEMUA ROUTE YANG MEMBUTUHKAN AUTH + VERIFIED
+// =================================================
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/', fn () => Auth::user()->isAdmin ? redirect('/admin') : redirect('/home'));
+
+    // Setelah login, root '/' akan di-handle oleh middleware ini
+    // Tapi karena user sudah login, kita redirect sesuai role
+    Route::get('/dashboard', fn () => Auth::user()->isAdmin 
+        ? redirect('/admin') 
+        : redirect('/home')
+    )->name('dashboard');
 
     // USER AREA
     Route::middleware('user')->group(function () {
@@ -40,69 +55,57 @@ Route::middleware([
     // ADMIN AREA
     Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('/', fn () => redirect('/admin/dashboard'));
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('admin.dashboard');
+        Route::get('/dashboard', fn () => view('admin.dashboard'))
+            ->name('admin.dashboard');
 
         // Barcode
         Route::resource('/barcodes', BarcodeController::class)
             ->only(['index', 'show', 'create', 'store', 'edit', 'update'])
             ->names([
-                'index' => 'admin.barcodes',
-                'show' => 'admin.barcodes.show',
-                'create' => 'admin.barcodes.create',
-                'store' => 'admin.barcodes.store',
-                'edit' => 'admin.barcodes.edit',
-                'update' => 'admin.barcodes.update',
+                'index'   => 'admin.barcodes',
+                'show'    => 'admin.barcodes.show',
+                'create'  => 'admin.barcodes.create',
+                'store'   => 'admin.barcodes.store',
+                'edit'    => 'admin.barcodes.edit',
+                'update'  => 'admin.barcodes.update',
             ]);
+
         Route::get('/barcodes/download/all', [BarcodeController::class, 'downloadAll'])
             ->name('admin.barcodes.downloadall');
         Route::get('/barcodes/{id}/download', [BarcodeController::class, 'download'])
             ->name('admin.barcodes.download');
 
-        // User/Employee/Karyawan
+        // Employee
         Route::resource('/employees', EmployeeController::class)
             ->only(['index'])
             ->names(['index' => 'admin.employees']);
 
         // Master Data
-        Route::get('/masterdata/division', [MasterDataController::class, 'division'])
-            ->name('admin.masters.division');
-        Route::get('/masterdata/job-title', [MasterDataController::class, 'jobTitle'])
-            ->name('admin.masters.job-title');
-        Route::get('/masterdata/education', [MasterDataController::class, 'education'])
-            ->name('admin.masters.education');
-        Route::get('/masterdata/shift', [MasterDataController::class, 'shift'])
-            ->name('admin.masters.shift');
-        Route::get('/masterdata/admin', [MasterDataController::class, 'admin'])
-            ->name('admin.masters.admin');
+        Route::get('/masterdata/division',  [MasterDataController::class, 'division'])->name('admin.masters.division');
+        Route::get('/masterdata/job-title', [MasterDataController::class, 'jobTitle'])->name('admin.masters.job-title');
+        Route::get('/masterdata/education', [MasterDataController::class, 'education'])->name('admin.masters.education');
+        Route::get('/masterdata/shift',     [MasterDataController::class, 'shift'])->name('admin.masters.shift');
+        Route::get('/masterdata/admin',     [MasterDataController::class, 'admin'])->name('admin.masters.admin');
 
-        // Presence/Absensi
-        Route::get('/attendances', [AttendanceController::class, 'index'])
-            ->name('admin.attendances');
+        // Attendance
+        Route::get('/attendances', [AttendanceController::class, 'index'])->name('admin.attendances');
+        Route::get('/attendances/report', [AttendanceController::class, 'report'])->name('admin.attendances.report');
 
-        // Presence/Absensi
-        Route::get('/attendances/report', [AttendanceController::class, 'report'])
-            ->name('admin.attendances.report');
+        // Import Export
+        Route::get('/import-export/users',       [ImportExportController::class, 'users'])->name('admin.import-export.users');
+        Route::get('/import-export/attendances', [ImportExportController::class, 'attendances'])->name('admin.import-export.attendances');
 
-        // Import/Export
-        Route::get('/import-export/users', [ImportExportController::class, 'users'])
-            ->name('admin.import-export.users');
-        Route::get('/import-export/attendances', [ImportExportController::class, 'attendances'])
-            ->name('admin.import-export.attendances');
+        Route::post('/users/import',       [ImportExportController::class, 'importUsers'])->name('admin.users.import');
+        Route::post('/attendances/import', [ImportExportController::class, 'importAttendances'])->name('admin.attendances.import');
 
-        Route::post('/users/import', [ImportExportController::class, 'importUsers'])
-            ->name('admin.users.import');
-        Route::post('/attendances/import', [ImportExportController::class, 'importAttendances'])
-            ->name('admin.attendances.import');
-
-        Route::get('/users/export', [ImportExportController::class, 'exportUsers'])
-            ->name('admin.users.export');
-        Route::get('/attendances/export', [ImportExportController::class, 'exportAttendances'])
-            ->name('admin.attendances.export');
+        Route::get('/users/export',       [ImportExportController::class, 'exportUsers'])->name('admin.users.export');
+        Route::get('/attendances/export', [ImportExportController::class, 'exportAttendances'])->name('admin.attendances.export');
     });
 });
 
+// =================================================
+// 3. LIVEWIRE CUSTOM ROUTE (tetap di bawah)
+// =================================================
 Livewire::setUpdateRoute(function ($handle) {
     return Route::post(Helpers::getNonRootBaseUrlPath() . '/livewire/update', $handle);
 });

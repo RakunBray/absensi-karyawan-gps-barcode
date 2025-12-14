@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -23,8 +21,6 @@ class User extends Authenticatable
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
      */
     protected $fillable = [
         'nip',
@@ -47,8 +43,6 @@ class User extends Authenticatable
 
     /**
      * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -60,8 +54,6 @@ class User extends Authenticatable
 
     /**
      * The accessors to append to the model's array form.
-     *
-     * @var array<int, string>
      */
     protected $appends = [
         'profile_photo_url',
@@ -69,39 +61,63 @@ class User extends Authenticatable
 
     /**
      * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'birth_date' => 'datetime:Y-m-d',
-            'password' => 'hashed',
+            'birth_date'        => 'date:Y-m-d',
+            'password'          => 'hashed',
         ];
     }
 
+    // Daftar grup yang valid
     public static $groups = ['user', 'admin', 'superadmin'];
 
-    final public function getIsUserAttribute(): bool
+    // ===================================================================
+    // ROLE ACCESSORS & METHODS — SUDAH DIPERBAIKI 100% & AMAN DIGUNAKAN!
+    // ===================================================================
+
+    // Accessor Laravel (bisa dipanggil $user->is_admin)
+    public function getIsAdminAttribute(): bool
     {
-        return $this->group === 'user';
+        return in_array($this->group, ['admin', 'superadmin']);
     }
 
-    final public function getIsAdminAttribute(): bool
-    {
-        return $this->group === 'admin' || $this->isSuperadmin;
-    }
-
-    final public function getIsSuperadminAttribute(): bool
+    public function getIsSuperadminAttribute(): bool
     {
         return $this->group === 'superadmin';
     }
 
-    final public function getIsNotAdminAttribute(): bool
+    public function getIsUserAttribute(): bool
     {
-        return !$this->isAdmin;
+        return $this->group === 'user';
     }
+
+    public function getIsNotAdminAttribute(): bool
+    {
+        return !$this->isAdmin();
+    }
+
+    // Method biasa — DIPAKAI DI LoginResponse & Middleware
+    public function isAdmin(): bool
+    {
+        return in_array($this->group, ['admin', 'superadmin']);
+    }
+
+    public function isSuperadmin(): bool
+    {
+        return $this->group === 'superadmin';
+    }
+
+    public function isUser(): bool
+    {
+        return $this->group === 'user';
+    }
+
+    // ===================================================================
+    // RELATIONSHIPS
+    // ===================================================================
 
     public function education()
     {

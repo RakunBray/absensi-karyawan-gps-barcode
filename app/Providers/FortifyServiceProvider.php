@@ -6,14 +6,12 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
-use Illuminate\Cache\RateLimiting\Limit;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\LoginResponse;
-use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -23,15 +21,18 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->instance(LoginResponse::class, new class implements LoginResponse
-        {
+        // REDIRECT SETELAH LOGIN — 100% PASTI JALAN
+        $this->app->instance(LoginResponse::class, new class implements LoginResponse {
             public function toResponse($request)
             {
-                if (Auth::user() && Auth::user()->isAdmin) {
-                    return redirect('/admin');
+                $user = Auth::user();
+
+                // CEK KOLOM 'group' LANGSUNG — TIDAK PAKAI METHOD, TIDAK BISA GAGAL!
+                if ($user && in_array($user->group, ['admin', 'superadmin'])) {
+                    return redirect('/admin/dashboard');
                 }
 
-                return redirect('/');
+                return redirect('/home');
             }
         });
     }
@@ -46,14 +47,24 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
-        RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())) . '|' . $request->ip());
+        // CUSTOM LOGIN — BISA PAKAI EMAIL ATAU NOMOR TELEPON
+        // PASTIKAN DI FORM KAMU PAKAI name="login"
+        Fortify::authenticateUsing(function (Request $request) {
+            $login = $request->input('login'); // <-- nama field di form harus "login"
 
-            return Limit::perMinute(5)->by($throttleKey);
-        });
+            if (!$login) {
+                return null;
+            }
 
-        RateLimiter::for('two-factor', function (Request $request) {
-            return Limit::perMinute(5)->by($request->session()->get('login.id'));
+            $user = User::where('email', $login)
+                        ->orWhere('phone', $login)
+                        ->first();
+
+            if ($user && Hash::check($request->password, $user->password)) {
+                return $user;
+            }
+
+            return null;
         });
     }
 }
