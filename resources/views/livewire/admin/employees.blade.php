@@ -632,3 +632,27 @@
     @endif
   </x-modal>
 </div>
+<td>
+  @if ($user->email_verified_at)
+    <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">Aktif</span>
+  @else
+    <span class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">Belum Verifikasi</span>
+  @endif
+</td>
+
+<td class="flex gap-2 justify-end">
+  @if (!$user->email_verified_at)
+    <x-button wire:click="verify('{{ $user->id }}')" class="bg-green-600">
+      Verifikasi
+    </x-button>
+  @else
+    <x-secondary-button wire:click="deactivate('{{ $user->id }}')">
+      Nonaktifkan
+    </x-secondary-button>
+  @endif
+
+  <x-button wire:click="edit('{{ $user->id }}')">Edit</x-button>
+  <x-danger-button wire:click="confirmDeletion('{{ $user->id }}','{{ $user->name }}')">
+    Hapus
+  </x-danger-button>
+</td>

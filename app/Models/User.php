@@ -28,7 +28,7 @@ class User extends Authenticatable
         'email',
         'password',
         'raw_password',
-        'group',
+        'group',                    // kolom role / grup
         'phone',
         'gender',
         'birth_date',
@@ -71,45 +71,64 @@ class User extends Authenticatable
         ];
     }
 
-    // Daftar grup yang valid
+    // Daftar grup yang valid (opsional, untuk validasi atau referensi)
     public static $groups = ['user', 'admin', 'superadmin'];
 
     // ===================================================================
-    // ROLE ACCESSORS & METHODS — SUDAH DIPERBAIKI 100% & AMAN DIGUNAKAN!
+    // ROLE ACCESSORS & METHODS
     // ===================================================================
 
-    // Accessor Laravel (bisa dipanggil $user->is_admin)
+    /**
+     * Accessor: $user->is_admin (boolean)
+     */
     public function getIsAdminAttribute(): bool
     {
         return in_array($this->group, ['admin', 'superadmin']);
     }
 
+    /**
+     * Accessor: $user->is_superadmin
+     */
     public function getIsSuperadminAttribute(): bool
     {
         return $this->group === 'superadmin';
     }
 
+    /**
+     * Accessor: $user->is_user
+     */
     public function getIsUserAttribute(): bool
     {
         return $this->group === 'user';
     }
 
+    /**
+     * Accessor: $user->is_not_admin (kebalikan dari is_admin)
+     */
     public function getIsNotAdminAttribute(): bool
     {
-        return !$this->isAdmin();
+        return ! $this->is_admin;
     }
 
-    // Method biasa — DIPAKAI DI LoginResponse & Middleware
+    /**
+     * Method biasa: $user->isAdmin()
+     */
     public function isAdmin(): bool
     {
         return in_array($this->group, ['admin', 'superadmin']);
     }
 
+    /**
+     * Method: $user->isSuperadmin()
+     */
     public function isSuperadmin(): bool
     {
         return $this->group === 'superadmin';
     }
 
+    /**
+     * Method: $user->isUser()
+     */
     public function isUser(): bool
     {
         return $this->group === 'user';

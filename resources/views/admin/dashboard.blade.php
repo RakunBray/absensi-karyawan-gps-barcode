@@ -15,7 +15,7 @@
             <!-- Kartu Utama -->
             <div class="mb-8 overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 shadow-2xl rounded-3xl">
                 <div class="px-8 py-12 text-center">
-                    <h3 class="text-4xl font-bold text-white mb-4">Absensi Karyawan MBG</h3>
+                    <h3 class="text-4xl font-bold text-white mb-4">Absensi Karyawan SPPG</h3>
                     <p class="text-xl text-purple-100">Dashboard Admin • {{ now()->format('d F Y') }}</p>
                 </div>
             </div>

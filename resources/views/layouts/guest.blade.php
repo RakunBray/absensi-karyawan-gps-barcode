@@ -58,7 +58,7 @@
             </form>
 
             <p class="text-center text-gray-500 text-xs mt-10">
-                © {{ date('Y') }} MBG Corporation • Dibuat oleh <span class="text-purple-400 font-bold">kamu</span>
+                © {{ date('Y') }} SPPG Corporation • Dibuat oleh <span class="text-purple-400 font-bold">kamu</span>
             </p>
         </div>
     </div>

@@ -13,27 +13,50 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->ulid('id')->primary();
+
             $table->string('nip')->nullable();
             $table->string('name');
             $table->string('email')->unique();
             $table->string('phone');
-            $table->enum('gender', ['male', 'female']);
-            $table->date('birth_date')->nullable(); // tanggal lahir
-            $table->string('birth_place')->nullable(); // tempat lahir
-            $table->string('address'); // alamat tempat tinggal
-            $table->string('city'); // kota
+            $table->enum('gender', ['male', 'female'])->nullable();
 
-            // pendidikan terakhir
-            $table->foreignId('education_id')->nullable()->constrained('educations');
-            // divisi
-            $table->foreignId('division_id')->nullable()->constrained('divisions');
-            // jabatan
-            $table->foreignId('job_title_id')->nullable()->constrained('job_titles');
+            $table->date('birth_date')->nullable();
+            $table->string('birth_place')->nullable();
+            $table->string('address')->nullable();
+            $table->string('city')->nullable();
+
+            /**
+             * RELASI MASTER DATA
+             * → jika master dihapus, user TIDAK error
+             */
+            $table->foreignId('education_id')
+                ->nullable()
+                ->constrained('educations')
+                ->nullOnDelete();
+
+            $table->foreignId('division_id')
+                ->nullable()
+                ->constrained('divisions')
+                ->nullOnDelete();
+
+            $table->foreignId('job_title_id')
+                ->nullable()
+                ->constrained('job_titles')
+                ->nullOnDelete();
 
             $table->string('password');
             $table->string('raw_password')->nullable();
 
-            $table->enum('group', ['user', 'admin', 'superadmin']);
+            /**
+             * STATUS AKUN
+             * user        → aktif
+             * admin       → admin
+             * superadmin  → superadmin
+             * disabled    → akun dinonaktifkan (pengganti delete)
+             */
+            $table->enum('group', ['user', 'admin', 'superadmin', 'disabled'])
+                  ->default('user');
+
             $table->timestamp('email_verified_at')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
             $table->rememberToken();
@@ -61,8 +84,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

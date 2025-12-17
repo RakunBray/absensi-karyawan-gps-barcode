@@ -21,13 +21,14 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // REDIRECT SETELAH LOGIN — 100% PASTI JALAN
+        /**
+         * Redirect setelah login berdasarkan role
+         */
         $this->app->instance(LoginResponse::class, new class implements LoginResponse {
             public function toResponse($request)
             {
                 $user = Auth::user();
 
-                // CEK KOLOM 'group' LANGSUNG — TIDAK PAKAI METHOD, TIDAK BISA GAGAL!
                 if ($user && in_array($user->group, ['admin', 'superadmin'])) {
                     return redirect('/admin/dashboard');
                 }
@@ -47,12 +48,15 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
-        // CUSTOM LOGIN — BISA PAKAI EMAIL ATAU NOMOR TELEPON
-        // PASTIKAN DI FORM KAMU PAKAI name="login"
+        /**
+         * Custom authentication:
+         * - Login pakai email atau nomor HP
+         * - Blok akun nonaktif (disabled)
+         */
         Fortify::authenticateUsing(function (Request $request) {
-            $login = $request->input('login'); // <-- nama field di form harus "login"
+            $login = $request->input('login');
 
-            if (!$login) {
+            if (! $login) {
                 return null;
             }
 
@@ -60,11 +64,20 @@ class FortifyServiceProvider extends ServiceProvider
                         ->orWhere('phone', $login)
                         ->first();
 
-            if ($user && Hash::check($request->password, $user->password)) {
-                return $user;
+            if (! $user) {
+                return null;
             }
 
-            return null;
+            if (! Hash::check($request->password, $user->password)) {
+                return null;
+            }
+
+            // 🔒 Akun belum diaktifkan admin
+            if ($user->group === 'disabled') {
+                abort(403, 'Akun Anda belum diaktifkan oleh admin.');
+            }
+
+            return $user;
         });
     }
 }

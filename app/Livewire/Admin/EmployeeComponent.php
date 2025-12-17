@@ -15,6 +15,7 @@ class EmployeeComponent extends Component
     use WithPagination, InteractsWithBanner, WithFileUploads;
 
     public UserForm $form;
+
     public $deleteName = null;
     public $creating = false;
     public $editing = false;
@@ -28,12 +29,18 @@ class EmployeeComponent extends Component
     public ?string $education = null;
     public ?string $search = null;
 
+    /* ======================================================
+     |  DETAIL
+     ======================================================*/
     public function show($id)
     {
-        $this->form->setUser(User::find($id));
+        $this->form->setUser(User::findOrFail($id));
         $this->showDetail = true;
     }
 
+    /* ======================================================
+     |  CREATE
+     ======================================================*/
     public function showCreating()
     {
         $this->form->resetErrorBag();
@@ -45,25 +52,78 @@ class EmployeeComponent extends Component
     public function create()
     {
         $this->form->store();
+
         $this->creating = false;
-        $this->banner(__('Created successfully.'));
+        $this->banner('Karyawan berhasil ditambahkan (belum diverifikasi).');
     }
 
+    /* ======================================================
+     |  EDIT
+     ======================================================*/
     public function edit($id)
     {
         $this->form->resetErrorBag();
         $this->form->reset();
+
         $this->editing = true;
-        /** @var User $user */
-        $user = User::find($id);
-        $this->form->setUser($user);
+        $this->form->setUser(User::findOrFail($id));
     }
 
     public function update()
     {
         $this->form->update();
+
         $this->editing = false;
-        $this->banner(__('Updated successfully.'));
+        $this->banner('Data karyawan berhasil diperbarui.');
+    }
+
+    /* ======================================================
+     |  VERIFIKASI AKUN
+     ======================================================*/
+    public function verify(string $id): void
+    {
+        $user = User::where('group', 'user')->findOrFail($id);
+
+        if ($user->email_verified_at) {
+            return;
+        }
+
+        $user->update([
+            'email_verified_at' => now(),
+        ]);
+
+        $this->banner('Akun karyawan berhasil diverifikasi.');
+    }
+
+    public function deactivate(string $id): void
+    {
+        $user = User::where('group', 'user')->findOrFail($id);
+
+        $user->update([
+            'email_verified_at' => null,
+        ]);
+
+        $this->banner('Akun karyawan berhasil dinonaktifkan.');
+    }
+
+    /* ======================================================
+     |  DELETE
+     ======================================================*/
+    public function confirmDeletion($id, $name)
+    {
+        $this->deleteName = $name;
+        $this->selectedId = $id;
+        $this->confirmingDeletion = true;
+    }
+
+    public function delete()
+    {
+        $user = User::findOrFail($this->selectedId);
+
+        $this->form->setUser($user)->delete();
+
+        $this->confirmingDeletion = false;
+        $this->banner('Akun karyawan berhasil dihapus.');
     }
 
     public function deleteProfilePhoto()
@@ -71,35 +131,28 @@ class EmployeeComponent extends Component
         $this->form->deleteProfilePhoto();
     }
 
-    public function confirmDeletion($id, $name)
-    {
-        $this->deleteName = $name;
-        $this->confirmingDeletion = true;
-        $this->selectedId = $id;
-    }
-
-    public function delete()
-    {
-        $user = User::find($this->selectedId);
-        $this->form->setUser($user)->delete();
-        $this->confirmingDeletion = false;
-        $this->banner(__('Deleted successfully.'));
-    }
-
+    /* ======================================================
+     |  RENDER
+     ======================================================*/
     public function render()
     {
         $users = User::where('group', 'user')
             ->when($this->search, function (Builder $q) {
-                return $q->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('nip', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%')
-                    ->orWhere('phone', 'like', '%' . $this->search . '%');
+                $q->where(function ($sub) {
+                    $sub->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('nip', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%')
+                        ->orWhere('phone', 'like', '%' . $this->search . '%');
+                });
             })
             ->when($this->division, fn (Builder $q) => $q->where('division_id', $this->division))
             ->when($this->jobTitle, fn (Builder $q) => $q->where('job_title_id', $this->jobTitle))
             ->when($this->education, fn (Builder $q) => $q->where('education_id', $this->education))
             ->orderBy('name')
             ->paginate(20);
-        return view('livewire.admin.employees', ['users' => $users]);
+
+        return view('livewire.admin.employees', [
+            'users' => $users,
+        ]);
     }
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBG - Sistem Informasi Kepegawaian & Absensi</title>
+    <title>SPPG - Sistem Informasi Kepegawaian & Absensi</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>body { font-family: 'Inter', sans-serif; }</style>
@@ -15,16 +15,16 @@
         <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
             <div class="flex items-center space-x-4">
                 <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-2xl font-bold">
-                    <img src="public/img/MBG.png">
+                    M
                 </div>
-                <span class="text-2xl font-bold">MBG Corporation</span>
+                <span class="text-2xl font-bold">SPPG Corporation</span>
             </div>
-            {{--<div class="flex items-center space-x-6">
-                <a href="#fitur" class="hover:text-purple-400 transition">Fitur</a>
-                <a href="#tentang" class="hover:text-purple-400 transition">Tentang</a>
-                <a href="{{ route('login') }}" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full font-semibold transition transform hover:scale-105">
-                    Masuk ke Sistem
-                </a>--}}
+            <div class="flex items-center space-x-6">
+               {{-- <a href="#fitur" class="hover:text-purple-400 transition">Fitur</a>
+                <a href="#tentang" class="hover:text-purple-400 transition">Tentang</a>--}}
+                <a href="{{ route('register') }}" class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full font-semibold transition transform hover:scale-105">
+                    Daftar Akun Absensi
+                </a>
             </div>
         </div>
     </nav>
@@ -34,7 +34,7 @@
         <div class="max-w-5xl mx-auto">
             <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
                 Sistem Absensi & Kepegawaian<br>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">MBG Corporation</span>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">SPPG Corporation</span>
             </h1>
             <p class="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
                 Kelola absensi, cuti, data karyawan, dan laporan secara digital — cepat, akurat, dan aman.
@@ -74,7 +74,7 @@
 
     <!-- Footer -->
     <footer class="py-12 text-center border-t border-white/10">
-        <p class="text-lg">© {{ date('Y') }} <strong>MBG Corporation</strong>. All rights reserved.</p>
+        <p class="text-lg">© {{ date('Y') }} <strong>SPPG Corporation</strong>. All rights reserved.</p>
         <p class="text-sm text-gray-400 mt-2">
             Dibangun & dikelola oleh <span class="text-purple-400 font-bold">Kamu</span>
         </p>
