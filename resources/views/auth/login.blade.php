@@ -72,10 +72,26 @@
     </div>
 </div>
 
-<script>
+{{--<script>
 function togglePass(id, btn) {
     const x = document.getElementById(id);
     x.type = x.type === "password" ? "text" : "password";
 }
-</script>
+</script>--}}
+    <script>
+        function togglePass(fieldId, button) {
+            const input = document.getElementById(fieldId);
+            const eyeOpen = button.querySelector(`#eye-open-${fieldId}`);
+            const eyeClosed = button.querySelector(`#eye-closed-${fieldId}`);
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeOpen.classList.remove('hidden');
+                eyeClosed.classList.add('hidden');
+            } else {
+                input.type = 'password';
+                eyeOpen.classList.add('hidden');
+                eyeClosed.classList.remove('hidden');
+            }
+        }
+    </script>
 @endsection
