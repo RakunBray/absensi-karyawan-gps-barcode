@@ -78,6 +78,7 @@ class UserFactory extends Factory
             'city' => '',
             'group' => $superadmin ? 'superadmin' : 'admin',
             'gender' => 'male',
+            'status' => 'approved',
         ]);
     }
 

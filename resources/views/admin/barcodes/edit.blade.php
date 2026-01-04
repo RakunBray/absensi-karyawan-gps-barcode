@@ -76,9 +76,12 @@
                 <div id="map" class="my-6 h-72 w-full md:h-96"></div>
               </div>
 
-              <div class="mb-3 mt-4 flex items-center justify-end">
-                <x-button class="ms-4">
-                  {{ __('Save') }}
+              <div class="mb-3 mt-4 flex items-center justify-end gap-2">
+                <x-secondary-button href="{{ route('admin.barcodes') }}">
+                  {{ __('Kembali') }}
+                </x-secondary-button>
+                <x-button>
+                  {{ __('Simpan') }}
                 </x-button>
               </div>
             </div>

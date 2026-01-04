@@ -56,54 +56,66 @@ class Attendance extends Model
         return $this->belongsTo(Shift::class);
     }
 
-    function getLatLngAttribute(): array|null
+    public function getLatLngAttribute(): array|null
     {
         if (is_null($this->latitude) || is_null($this->longitude)) {
             return null;
         }
         return [
-            'lat' => $this->latitude,
-            'lng' => $this->longitude
+            'lat' => (float) $this->latitude,
+            'lng' => (float) $this->longitude
         ];
     }
-
-    public static function filter(
+    
+    public function scopeFilter(
+        Builder $query,
         $date = null,
         $week = null,
         $month = null,
+        $day = null,      
         $year = null,
         $userId = null,
         $division = null,
         $jobTitle = null,
         $education = null
-    ) {
-        return self::when($date, function (Builder $query) use ($date) {
-            $query->where('date', Carbon::parse($date)->toDateString());
-        })->when($week && !$date, function (Builder $query) use ($week) {
-            $start = Carbon::parse($week)->startOfWeek();
-            $end = Carbon::parse($week)->endOfWeek();
-            $query->whereBetween('date', [$start->toDateString(), $end->toDateString()]);
-        })->when($month && !$week && !$date, function (Builder $query) use ($month) {
-            $date = Carbon::parse($month);
-            $query->whereMonth('date', $date->month)->whereYear('date', $date->year);
-        })->when($year && !$month && !$week && !$date, function (Builder $query) use ($year) {
-            $date = Carbon::parse($year);
-            $query->whereYear('date', $date->year);
-        })->when($userId, function (Builder $query) use ($userId) {
-            $query->where('user_id', $userId);
-        })->when($division && !$userId, function (Builder $query) use ($division) {
-            $query->whereHas('user', function (Builder $query) use ($division) {
-                $query->where('division_id', $division);
-            });
-        })->when($jobTitle && !$userId, function (Builder $query) use ($jobTitle) {
-            $query->whereHas('user', function (Builder $query) use ($jobTitle) {
-                $query->where('job_title_id', $jobTitle);
-            });
-        })->when($education && !$userId, function (Builder $query) use ($education) {
-            $query->whereHas('user', function (Builder $query) use ($education) {
-                $query->where('education_id', $education);
-            });
-        });
+    ): Builder {
+        return $query
+            ->when($day, function (Builder $q) use ($day) {
+                try {
+                    $q->where('date', Carbon::parse($day)->toDateString());
+                } catch (\Exception $e) {
+                    // Invalid date → abaikan
+                }
+            })
+            ->when($week && !$day, function (Builder $q) use ($week) {
+                try {
+                    $start = Carbon::parse($week)->startOfWeek();
+                    $end = Carbon::parse($week)->endOfWeek();
+                    $q->whereBetween('date', [$start->toDateString(), $end->toDateString()]);
+                } catch (\Exception $e) {
+                    // Invalid week → abaikan
+                }
+            })
+            ->when($month && !$week && !$date, function (Builder $q) use ($month) {
+                try {
+                    $parsed = Carbon::parse($month);
+                    $q->whereMonth('date', $parsed->month)
+                      ->whereYear('date', $parsed->year);
+                } catch (\Exception $e) {
+                    // Invalid month → abaikan
+                }
+            })
+            ->when($year && !$month && !$week && !$date, function (Builder $q) use ($year) {
+                try {
+                    $q->whereYear('date', $year);
+                } catch (\Exception $e) {
+                    // Invalid year → abaikan
+                }
+            })
+            ->when($userId, fn(Builder $q) => $q->where('user_id', $userId))
+            ->when($division && !$userId, fn(Builder $q) => $q->whereHas('user', fn(Builder $qq) => $qq->where('division_id', $division)))
+            ->when($jobTitle && !$userId, fn(Builder $q) => $q->whereHas('user', fn(Builder $qq) => $qq->where('job_title_id', $jobTitle)))
+            ->when($education && !$userId, fn(Builder $q) => $q->whereHas('user', fn(Builder $qq) => $qq->where('education_id', $education)));
     }
 
     public function attachmentUrl(): ?Attribute
@@ -116,7 +128,7 @@ class Attendance extends Model
             if (str_contains($this->attachment, 'https://') || str_contains($this->attachment, 'http://')) {
                 return $this->attachment;
             }
-            return Storage::disk(config('jetstream.attachment_disk'))->url($this->attachment);
+            return Storage::disk(config('jetstream.attachment_disk', 'public'))->url($this->attachment);
         });
     }
 

@@ -3,13 +3,14 @@
 <div x-data="{{ json_encode(['show' => true, 'style' => $style, 'message' => $message]) }}"
     :class="{ 'bg-indigo-500': style == 'success', 'bg-red-700': style == 'danger', 'bg-yellow-500': style == 'warning', 'bg-gray-500': style != 'success' && style != 'danger' && style != 'warning'}"
             style="display: none;"
+            class="fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] min-w-[320px] max-w-2xl rounded-xl shadow-2xl transition-all duration-300 ease-in-out"
             x-show="show && message"
             x-on:banner-message.window="
                 style = event.detail.style;
                 message = event.detail.message;
                 show = true;
             ">
-    <div class="max-w-screen-xl mx-auto py-2 px-3 sm:px-6 lg:px-8">
+    <div class="px-4 py-3">
         <div class="flex items-center justify-between flex-wrap">
             <div class="w-0 flex-1 flex items-center min-w-0">
                 <span class="flex p-2 rounded-lg" :class="{ 'bg-indigo-600': style == 'success', 'bg-red-600': style == 'danger', 'bg-yellow-600': style == 'warning' }">

@@ -15,126 +15,173 @@ use Illuminate\Support\Facades\Cache;
 class AttendanceController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * @OA\Get(
+     *     path="/admin/attendances",
+     *     tags={"Admin - Attendances"},
+     *     summary="Daftar absensi",
+     *     description="Menampilkan daftar semua data absensi karyawan",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/Attendance")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden")
+     * )
      */
     public function index()
     {
         return view('admin.attendances.index');
     }
 
+    /**
+     * @OA\Get(
+     *     path="/admin/attendances/report",
+     *     tags={"Admin - Attendances"},
+     *     summary="Generate laporan absensi",
+     *     description="Generate dan download laporan absensi dalam format PDF berdasarkan filter",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="month",
+     *         in="query",
+     *         description="Filter by month (format: Y-m, contoh: 2024-01)",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="week",
+     *         in="query",
+     *         description="Filter by week (format: Y-W##, contoh: 2024-W01)",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="division",
+     *         in="query",
+     *         description="Filter by division ID",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="jobTitle",
+     *         in="query",
+     *         description="Filter by job title ID",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success - Returns PDF file",
+     *         @OA\MediaType(
+     *             mediaType="application/pdf"
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function report(Request $request)
-    {
-        $request->validate([
-            'date' => 'nullable|date_format:Y-m-d',
-            'month' => 'nullable|date_format:Y-m',
-            'week' => 'nullable',
-            'division' => 'nullable|exists:divisions,id',
-            'job_title' => 'nullable|exists:job_titles,id',
-        ]);
+{
+    $request->validate([
+        'day' => 'nullable|date_format:Y-m-d',
+        'week' => 'nullable',
+        'month' => 'nullable|date_format:Y-m',
+        'division' => 'nullable|exists:divisions,id',
+        'jobTitle' => 'nullable|exists:job_titles,id',
+    ]);
 
-        if (!$request->date && !$request->month && !$request->week) {
-            return redirect()->back();
-        }
+    $filterType = 'all';
+    $carbon = Carbon::now();
+    $start = null;
+    $end = null;
+    $dates = collect();
 
-        $carbon = new Carbon;
-
-        if ($request->date) {
-            $dates = [$carbon->parse($request->date)->settings(['formatFunction' => 'translatedFormat'])];
-        } else if ($request->week) {
-            $start = $carbon->parse($request->week)->settings(['formatFunction' => 'translatedFormat'])->startOfWeek();
-            $end = $carbon->parse($request->week)->settings(['formatFunction' => 'translatedFormat'])->endOfWeek();
-            $dates = $start->range($end)->toArray();
-        } else if ($request->month) {
-            $start = $carbon->parse($request->month)->settings(['formatFunction' => 'translatedFormat'])->startOfMonth();
-            $end = $carbon->parse($request->month)->settings(['formatFunction' => 'translatedFormat'])->endOfMonth();
-            $dates = $start->range($end)->toArray();
-        }
-        $employees = User::where('group', 'user')
-            ->when($request->division, fn (Builder $q) => $q->where('division_id', $request->division))
-            ->when($request->jobTitle, fn (Builder $q) => $q->where('job_title_id', $request->jobTitle))
-            ->get()
-            ->map(function ($user) use ($request) {
-                if ($request->date) {
-                    $attendances = new Collection(Cache::remember(
-                        "attendance-$user->id-$request->date",
-                        now()->addDay(),
-                        function () use ($user, $request) {
-                            $date = Carbon::parse($request->date);
-
-                            /** @var Collection<Attendance>  */
-                            $attendances = Attendance::where('user_id', $user->id)
-                                ->where('date', $date->toDateString())
-                                ->get();
-
-                            return $attendances->map(
-                                function (Attendance $v) {
-                                    $v->setAttribute('coordinates', $v->lat_lng);
-                                    $v->setAttribute('lat', $v->latitude);
-                                    $v->setAttribute('lng', $v->longitude);
-                                    if ($v->attachment) {
-                                        $v->setAttribute('attachment', $v->attachment_url);
-                                    }
-                                    if ($v->shift) {
-                                        $v->setAttribute('shift', $v->shift->name);
-                                    }
-                                    return $v->getAttributes();
-                                }
-                            )->toArray();
-                        }
-                    ) ?? []);
-                } else if ($request->week) {
-                    $attendances = new Collection(Cache::remember(
-                        "attendance-$user->id-$request->week",
-                        now()->addDay(),
-                        function () use ($user, $request) {
-                            $start = Carbon::parse($request->week)->startOfWeek();
-                            $end = Carbon::parse($request->week)->endOfWeek();
-
-                            /** @var Collection<Attendance>  */
-                            $attendances = Attendance::where('user_id', $user->id)
-                                ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
-                                ->get(['id', 'status', 'date']);
-
-                            return $attendances->map(fn ($v) => $v->getAttributes())->toArray();
-                        }
-                    ) ?? []);
-                } else if ($request->month) {
-                    $my = Carbon::parse($request->month);
-                    $attendances = new Collection(Cache::remember(
-                        "attendance-$user->id-$my->month-$my->year",
-                        now()->addDay(),
-                        function () use ($user, $my) {
-                            /** @var Collection<Attendance>  */
-                            $attendances = Attendance::where('user_id', $user->id)
-                                ->whereMonth('date', $my->month)
-                                ->whereYear('date', $my->year)
-                                ->get(['id', 'status', 'date']);
-
-                            return $attendances->map(fn ($v) => $v->getAttributes())->toArray();
-                        }
-                    ) ?? []);
-                } else {
-                    /** @var Collection */
-                    $attendances = Attendance::all();
-                }
-                $user->attendances = $attendances;
-                return $user;
-            });
-
-        $pdf = Pdf::loadView('admin.attendances.report', [
-            'employees' => $employees,
-            'dates' => $dates,
-            'date' => $request->date,
-            'month' => $request->month,
-            'week' => $request->week,
-            'division' => $request->division,
-            'jobTitle' => $request->jobTitle,
-            'start' => $request->date ? null : $start,
-            'end' => $request->date ? null : $end
-        ])->setPaper($request->month ? 'a3' : 'a4', $request->date ? 'portrait' : 'landscape');
-        return $pdf->stream();
-        // return $pdf->download();
+    /** =========================
+     * Tentukan periode
+     * ========================= */
+    if ($request->day && preg_match('/^\d{4}-\d{2}-\d{2}$/', $request->day)) {
+        $filterType = 'day';
+        $start = Carbon::parse($request->day)->startOfDay();
+        $end = Carbon::parse($request->day)->endOfDay();
+    } elseif ($request->week && preg_match('/^\d{4}-W\d{2}$/', $request->week)) {
+        $filterType = 'week';
+        $start = Carbon::parse($request->week)->startOfWeek();
+        $end = Carbon::parse($request->week)->endOfWeek();
+    } elseif ($request->month && preg_match('/^\d{4}-\d{2}$/', $request->month)) {
+        $filterType = 'month';
+        $start = Carbon::parse($request->month)->startOfMonth();
+        $end = Carbon::parse($request->month)->endOfMonth();
     }
+
+    /** =========================
+     * Generate daftar tanggal
+     * ========================= */
+    if ($start && $end) {
+        $dates = collect($start->range($end))->map(fn ($d) => $d->copy());
+    } else {
+        $dates = Attendance::select('date')
+            ->distinct()
+            ->orderBy('date')
+            ->pluck('date')
+            ->map(fn ($d) => Carbon::parse($d));
+    }
+
+    /** =========================
+     * Ambil data user + attendance
+     * ========================= */
+    $employees = User::where('group', 'user')
+        ->when($request->division, fn ($q) => $q->where('division_id', $request->division))
+        ->when($request->jobTitle, fn ($q) => $q->where('job_title_id', $request->jobTitle))
+        ->get()
+        ->map(function ($user) use ($filterType, $start, $end) {
+
+            $attendanceQuery = Attendance::where('user_id', $user->id);
+
+            if ($filterType !== 'all') {
+                $attendanceQuery->whereBetween(
+                    'date',
+                    [$start->toDateString(), $end->toDateString()]
+                );
+            }
+
+            $attendances = $attendanceQuery
+                ->get(['id', 'status', 'date', 'time_in', 'time_out'])
+                ->map(function ($v) {
+                    return [
+                        'status' => $v->status,
+                        'date' => $v->date,
+                        'time_in' => $v->time_in?->format('H:i:s'),
+                        'time_out' => $v->time_out?->format('H:i:s'),
+                    ];
+                });
+
+            $user->attendances = $attendances;
+            return $user;
+        });
+
+    /** =========================
+     * Generate PDF
+     * ========================= */
+    $pdf = Pdf::loadView('admin.attendances.report', [
+        'employees' => $employees,
+        'dates' => $dates,
+        'filterType' => $filterType,
+        'day' => $request->day,
+        'week' => $request->week,
+        'month' => $request->month,
+        'division' => $request->division,
+        'jobTitle' => $request->jobTitle,
+        'start' => $start,
+        'end' => $end,
+    ])->setPaper($filterType === 'month' ? 'a3' : 'a4', 'landscape');
+
+    return $pdf->stream();
+}
 
     /**
      * Show the form for editing the specified resource.

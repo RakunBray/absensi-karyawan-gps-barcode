@@ -11,14 +11,15 @@ class UserVerification extends Component
     {
         $user = User::findOrFail($userId);
 
+        // Approve account
         $user->update([
             'status' => 'approved',
         ]);
 
-        // Kirim email verifikasi setelah approved
-        $user->sendEmailVerificationNotification();
+        // Kirim notifikasi akun disetujui
+        $user->notify(new \App\Notifications\AccountApproved());
 
-        session()->flash('success', 'Akun berhasil disetujui dan email verifikasi dikirim.');
+        session()->flash('success', 'Akun ' . $user->name . ' berhasil disetujui.');
     }
 
     public function rejectUser($userId)
@@ -28,6 +29,9 @@ class UserVerification extends Component
         $user->update([
             'status' => 'rejected',
         ]);
+
+        // Kirim notifikasi akun ditolak
+        $user->notify(new \App\Notifications\AccountRejected());
 
         session()->flash('success', 'Akun berhasil ditolak.');
     }
@@ -40,9 +44,12 @@ class UserVerification extends Component
             'email_verified_at' => now(),
         ]);
 
+        // Notify user that their email is verified and account is ready
+        $user->notify(new \App\Notifications\AccountApproved());
+
         session()->flash('success', 'Email berhasil diverifikasi.');
     }
-
+    
     public function deactivateUser($userId)
     {
         $user = User::findOrFail($userId);

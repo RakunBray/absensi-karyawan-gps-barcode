@@ -54,8 +54,7 @@ class FortifyServiceProvider extends ServiceProvider
          * - Blok akun nonaktif (disabled)
          */
         Fortify::authenticateUsing(function (Request $request) {
-            $login = $request->input('login');
-
+            $login = $request->input('email');
             if (! $login) {
                 return null;
             }
@@ -72,12 +71,33 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
-            // 🔒 Akun belum diaktifkan admin
-            if ($user->group === 'disabled') {
-                abort(403, 'Akun Anda belum diaktifkan oleh admin.');
+            // 🔒 Cek Status Approval & Aktif
+            if ($user->status !== 'approved') {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email' => ['Akun Anda belum diverifikasi atau sedang menunggu persetujuan admin.'],
+                ]);
             }
 
             return $user;
         });
+
+        // ==============================================
+        // TAMBAHAN UNTUK EMAIL VERIFICATION
+        // ==============================================
+
+        // View yang ditampilkan saat user login tapi email belum diverifikasi
+        Fortify::verifyEmailView(function () {
+            return view('auth.verify-email'); // pastikan file ini ada di resources/views/auth/verify-email.blade.php
+        });
+
+        // Opsional: Custom view untuk halaman "Kirim Ulang Verifikasi" (jika ingin terpisah)
+        // Fortify::requestVerificationLinkView(function () {
+        //     return view('auth.forgot-verification');
+        // });
+
+        // Opsional: Custom view untuk konfirmasi bahwa link verifikasi sudah dikirim ulang
+        // Fortify::confirmVerificationLinkView(function () {
+        //     return view('auth.link-sent');
+        // });
     }
 }

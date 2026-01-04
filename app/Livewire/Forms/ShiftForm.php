@@ -3,88 +3,63 @@
 namespace App\Livewire\Forms;
 
 use App\Models\Shift;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Livewire\Form;
+use Livewire\Attributes\Rule;
+use Illuminate\Support\Carbon;
 
 class ShiftForm extends Form
 {
-    public ?Shift $shift = null;
+    public ?Shift $shift;
 
-    public string $name = '';
-    public ?string $start_time = null;  // ← WAJIB: ?string agar sesuai input time
-    public ?string $end_time = null;    // ← WAJIB: ?string & nullable
+    #[Rule('required|string')]
+    public $name = '';
 
-    /**
-     * Validation rules
-     */
-    public function rules(): array
-    {
-        return [
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('shifts', 'name')->ignore($this->shift?->id),
-            ],
-            'start_time' => ['required', 'date_format:H:i'], // validasi format jam
-            'end_time'   => ['required', 'date_format:H:i'],
-        ];
-    }
+    #[Rule('required')] 
+    public $start_time = '';
 
-    /**
-     * Isi form saat edit
-     */
-    public function setShift(Shift $shift): self
+    #[Rule('required')] 
+    public $end_time = '';
+
+    public function setShift(Shift $shift)
     {
         $this->shift = $shift;
         $this->name = $shift->name;
-        $this->start_time = $shift->start_time; // otomatis string jika kolom time
+        $this->start_time = $shift->start_time;
         $this->end_time = $shift->end_time;
-
-        return $this;
+        
+        // --- PERBAIKAN PENTING DISINI ---
+        // Kita harus mengembalikan '$this' agar bisa disambung ->delete()
+        return $this; 
     }
 
-    /**
-     * Simpan shift baru
-     */
-    public function store(): void
+    public function store()
     {
-        if (! Auth::user()?->isAdmin()) {
-            abort(403, 'Hanya admin yang dapat membuat shift baru.');
-        }
-
         $this->validate();
 
-        Shift::create($this->only(['name', 'start_time', 'end_time']));
+        Shift::create([
+            'name' => $this->name,
+            'start_time' => Carbon::parse($this->start_time)->format('H:i:s'),
+            'end_time'   => Carbon::parse($this->end_time)->format('H:i:s'),
+        ]);
 
         $this->reset();
     }
 
-    /**
-     * Update shift existing
-     */
-    public function update(): void
+    public function update()
     {
-        if (! Auth::user()?->isAdmin()) {
-            abort(403, 'Hanya admin yang dapat mengubah shift.');
-        }
-
         $this->validate();
 
-        $this->shift->update($this->only(['name', 'start_time', 'end_time']));
+        $this->shift->update([
+            'name' => $this->name,
+            'start_time' => Carbon::parse($this->start_time)->format('H:i:s'),
+            'end_time'   => Carbon::parse($this->end_time)->format('H:i:s'),
+        ]);
     }
 
-    /**
-     * Hapus shift
-     */
-    public function delete(): void
+    public function delete()
     {
-        if (! Auth::user()?->isAdmin()) {
-            abort(403, 'Hanya admin yang dapat menghapus shift.');
+        if ($this->shift) {
+            $this->shift->delete();
         }
-
-        $this->shift->delete();
-        $this->reset();
     }
 }

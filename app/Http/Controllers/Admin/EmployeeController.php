@@ -10,7 +10,23 @@ use Illuminate\Support\Facades\Auth;
 class EmployeeController extends Controller
 {
     /**
-     * Daftar karyawan
+     * @OA\Get(
+     *     path="/admin/employees",
+     *     tags={"Admin - Employees"},
+     *     summary="Daftar karyawan",
+     *     description="Menampilkan daftar semua karyawan",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/User")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden")
+     * )
      */
     public function index()
     {
@@ -22,7 +38,27 @@ class EmployeeController extends Controller
     }
 
     /**
-     * Verifikasi akun karyawan
+     * @OA\Post(
+     *     path="/admin/employees/{id}/verify",
+     *     tags={"Admin - Employees"},
+     *     summary="Verifikasi akun karyawan",
+     *     description="Mengaktifkan dan memverifikasi email karyawan",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="User ID (ULID)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=302,
+     *         description="Redirect back dengan flash message"
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden"),
+     *     @OA\Response(response=404, description="User not found")
+     * )
      */
     public function verify(string $id): RedirectResponse
     {
@@ -46,7 +82,27 @@ class EmployeeController extends Controller
     }
 
     /**
-     * Nonaktifkan akun karyawan
+     * @OA\Post(
+     *     path="/admin/employees/{id}/deactivate",
+     *     tags={"Admin - Employees"},
+     *     summary="Nonaktifkan akun karyawan",
+     *     description="Menonaktifkan akun karyawan dengan menghapus email verification",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="User ID (ULID)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=302,
+     *         description="Redirect back dengan flash message"
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden"),
+     *     @OA\Response(response=404, description="User not found")
+     * )
      */
     public function deactivate(string $id): RedirectResponse
     {
@@ -63,7 +119,27 @@ class EmployeeController extends Controller
     }
 
     /**
-     * Hapus akun karyawan
+     * @OA\Delete(
+     *     path="/admin/employees/{id}",
+     *     tags={"Admin - Employees"},
+     *     summary="Hapus akun karyawan",
+     *     description="Menghapus akun karyawan secara permanen. Tidak dapat menghapus admin atau akun sendiri.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="User ID (ULID)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=302,
+     *         description="Redirect back dengan flash message"
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden - Cannot delete admin or self"),
+     *     @OA\Response(response=404, description="User not found")
+     * )
      */
     public function destroy(string $id): RedirectResponse
     {

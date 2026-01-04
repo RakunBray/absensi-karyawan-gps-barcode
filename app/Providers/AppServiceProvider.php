@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // RATE LIMITER UNTUK LOGIN (WAJIB!)
         RateLimiter::for('login', function (Request $request) {
-            $login = $request->input('login') ?? $request->ip();
+            $login = $request->input('email') ?? $request->ip();
             return Limit::perMinute(5)->by($login . '|' . $request->ip());
         });
 

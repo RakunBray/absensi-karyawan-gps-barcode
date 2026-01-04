@@ -10,17 +10,41 @@ class AuthenticateLoginAttempt
 {
     public function __invoke(Request $request)
     {
-        if (filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
-            $user = User::where('email', $request->email)->first();
+        $login = $request->input('email');
+
+        if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
+            $user = User::where('email', $login)->first();
         } else {
-            $user = User::where('phone', $request->email)->first();
+            $user = User::where('phone', $login)->first();
         }
 
         if ($user && Hash::check($request->password, $user->password)) {
-            if ($user->status !== 'approved') {
-                return null; // Prevent login if not approved
+            // Admin & Superadmin bypass approval check
+            if (in_array($user->group, ['admin', 'superadmin'])) {
+                return $user;
             }
+
+            if ($user->status === 'pending') {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email' => ['Akun Anda sedang menunggu persetujuan admin.'],
+                ]);
+            }
+
+            if ($user->status === 'rejected') {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email' => ['Akun Anda telah ditolak. Silakan hubungi admin.'],
+                ]);
+            }
+
+            if ($user->group === 'disabled') {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email' => ['Akun Anda telah dinonaktifkan.'],
+                ]);
+            }
+
             return $user;
         }
+
+        return null;
     }
 }

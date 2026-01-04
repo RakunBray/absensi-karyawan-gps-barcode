@@ -76,10 +76,7 @@
             $attendance = $employee->attendance;
             $timeIn = $attendance ? $attendance?->time_in?->format('H:i:s') : null;
             $timeOut = $attendance ? $attendance?->time_out?->format('H:i:s') : null;
-            $isWeekend = $date->isWeekend();
-            $status = ($attendance ?? [
-                'status' => $isWeekend || !$date->isPast() ? '-' : 'absent',
-            ])['status'];
+            $status = $attendance ? $attendance->status : 'absent';
             switch ($status) {
                 case 'present':
                     $shortStatus = 'H';

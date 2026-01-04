@@ -1,69 +1,59 @@
-{{-- resources/views/auth/passwords/email.blade.php --}}
+{{-- resources/views/auth/forgot-password.blade.php --}}
 @extends('layouts.guest-register')
 
 @section('content')
-    <div class="min-h-screen flex items-center justify-center px-6 py-12">
-        <div class="w-full max-w-lg">
+<div class="w-full max-w-md mx-auto">
+    <!-- Logo & Header -->
+    <div class="flex flex-col items-center mb-4">
+        <img src="/img/Logo-MBG.png" alt="Logo SPPG" class="h-20 w-auto mb-2 object-contain hover:scale-105 transition-transform">
+        <h2 class="text-2xl font-bold tracking-tight text-white text-center">Lupa Kata Sandi?</h2>
+        <p class="text-slate-400 text-sm mt-1 text-center px-4">Kami akan mengirimkan link reset ke email Anda.</p>
+    </div>
 
-            <!-- Logo -->
-            <div class="flex justify-center mb-10">
-                <div class="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center text-6xl font-bold text-white shadow-2xl ring-12 ring-purple-500/30">
-                    M
+    <!-- Main Card -->
+    <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] shadow-2xl p-6 sm:p-8">
+        <!-- Success Message -->
+        @if (session('status'))
+            <div class="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-center text-xs font-medium">
+                {{ session('status') }}
+            </div>
+        @endif
+
+        <x-validation-errors class="mb-6 text-red-400 text-sm bg-red-500/10 p-3 rounded-xl border border-red-500/20 text-center" />
+
+        <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
+            @csrf
+            
+            <div class="space-y-1.5">
+                <label for="email" class="text-xs font-semibold text-slate-400 ml-2 uppercase tracking-wider">Email / Telepon</label>
+                <div class="relative group">
+                    <x-input 
+                        type="text" 
+                        name="email"
+                        id="email"
+                        :value="old('email')" 
+                        required 
+                        autofocus 
+                        autocomplete="username"
+                        class="w-full pl-6 pr-6 py-3.5 bg-slate-900/50 border {{ $errors->has('email') ? 'border-red-500/50' : 'border-white/10' }} rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-slate-900 transition-all shadow-inner"
+                        placeholder="Masukkan Email Terdaftar" 
+                    />
                 </div>
             </div>
 
-            <!-- CARD LUPA KATA SANDI — SAMA PERSIS DENGAN LOGIN & REGISTER -->
-            <div class="backdrop-blur-3xl bg-white/10 border border-white/30 rounded-3xl shadow-3xl p-10">
+            <button type="submit" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-900/20 transition-all hover:scale-[1.02] active:scale-[0.98] outline-none ring-offset-2 ring-offset-slate-950 focus:ring-2 focus:ring-blue-500">
+                Kirim Link Reset
+            </button>
 
-                <h2 class="text-4xl font-bold text-white text-center mb-3">Lupa Kata Sandi?</h2>
-                <p class="text-center text-purple-200 text-base mb-10 leading-relaxed">
-                    Tenang! Masukkan email atau nomor telepon yang terdaftar, kami akan kirim link untuk reset kata sandi Anda.
-                </p>
-
-                <!-- Success Message -->
-                @if (session('status'))
-                    <div class="mb-8 p-5 bg-green-900/50 border border-green-500/50 rounded-2xl text-green-200 text-center text-sm font-medium">
-                        {{ session('status') }}
-                    </div>
-                @endif
-
-                <!-- Validation Errors -->
-                <x-validation-errors class="mb-8 text-red-400 text-center text-sm" />
-
-                <form method="POST" action="{{ route('password.email') }}">
-                    @csrf
-
-                    <!-- Email / Nomor Telepon -->
-                    <div class="mb-10">
-                        <x-input 
-                            type="text" 
-                            name="email" 
-                            :value="old('email')" 
-                            required 
-                            autofocus 
-                            autocomplete="username"
-                            class="w-full px-8 py-5 bg-black/50 border {{ $errors->has('email') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-purple-500/60 focus:border-purple-400 transition text-lg shadow-xl text-center"
-                            placeholder="Email atau Nomor Telepon" 
-                        />
-                        @error('email')
-                            <p class="mt-3 text-red-400 text-center text-sm font-medium">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Tombol Kirim Link -->
-                    <button type="submit"
-                        class="w-full py-5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xl font-bold rounded-full shadow-2xl transition hover:scale-105">
-                        Kirim Link Reset Kata Sandi
-                    </button>
-
-                    <!-- Kembali ke Login -->
-                    <div class="mt-8 text-center">
-                        <a href="{{ route('login') }}" class="text-purple-300 hover:text-white underline text-base font-medium transition">
-                            Kembali ke Masuk
-                        </a>
-                    </div>
-                </form>
+            <div class="pt-2 text-center">
+                <a href="{{ route('login') }}" class="text-slate-400 text-sm hover:text-white transition-colors flex items-center justify-center gap-2 group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Kembali ke Masuk
+                </a>
             </div>
-        </div>
+        </form>
     </div>
+</div>
 @endsection

@@ -1,31 +1,65 @@
 @php
   use Illuminate\Support\Carbon;
-  $m = Carbon::parse($month);
-  $showUserDetail = !$month || $week || $date; // is week or day filter
-  $isPerDayFilter = isset($date);
+  Carbon::setLocale('id');
+  $showUserDetail = true; // Always show user detail
+  $isPerDayFilter = false; // Never show per day filter view
+
+  $periodLabel = '';
+  if ($week && preg_match('/^\d{4}-W\d{2}$/', $week)) {
+      $start = Carbon::parse($week)->startOfWeek();
+      $end = Carbon::parse($week)->endOfWeek();
+      $periodLabel = 'Minggu ke-' . Carbon::parse($week)->week . ' (' . $start->isoFormat('D MMM') . ' - ' . $end->isoFormat('D MMM Y') . ')';
+  } elseif ($month && preg_match('/^\d{4}-\d{2}$/', $month)) {
+      $periodLabel = Carbon::parse($month)->isoFormat('MMMM Y');
+  } else {
+      $periodLabel = 'Semua Periode';
+  }
 @endphp
 <div>
   @pushOnce('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   @endpushOnce
-  <h3 class="col-span-2 mb-4 text-lg font-semibold leading-tight text-gray-800 dark:text-gray-200">
-    Data Absensi
-  </h3>
+  <div class="flex flex-col justify-between sm:flex-row mb-4">
+    <h3 class="mb-4 text-lg font-semibold leading-tight text-gray-800 dark:text-gray-200">
+      Data Absensi
+    </h3>
+    <h3 class="mb-4 text-lg font-semibold leading-tight text-gray-800 dark:text-gray-200">
+      Jumlah Karyawan: {{ $employeesCount ?? 0 }}
+    </h3>
+  </div>
   <div class="mb-1 text-sm dark:text-white">Filter:</div>
   <div class="mb-4 grid grid-cols-2 flex-wrap items-center gap-5 md:gap-8 lg:flex">
+
+     {{-- FILTER BULAN --}}
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
       <x-label for="month_filter" value="Per Bulan"></x-label>
-      <x-input type="month" name="month_filter" id="month_filter" wire:model.live="month" />
+      <x-select name="month_filter" id="month_filter" wire:model.live="month" class="min-w-[150px]">
+          <option value="">-- Pilih Bulan --</option>
+          @foreach ($monthOptions as $m)
+          <option value="{{ $m['value'] }}">{{ $m['label'] }}</option>
+      @endforeach
+      </x-select>
     </div>
+
+    {{-- 2. FILTER MINGGU --}}
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
       <x-label for="week_filter" value="Per Minggu"></x-label>
-      <x-input type="week" name="week_filter" id="week_filter" wire:model.live="week" />
+      <x-select name="week_filter" id="week_filter" wire:model.live="week" class="min-w-[220px]">
+          <option value="">-- Pilih Minggu --</option>
+          @foreach ($weekOptions as $w)
+          <option value="{{ $w['value'] }}">{{ $w['label'] }}</option>
+          @endforeach
+      </x-select>
     </div>
-    <div class="col-span-2 flex flex-col gap-3 lg:flex-row lg:items-center">
-      <x-label for="day_filter" value="Per Hari"></x-label>
-      <x-input type="date" name="day_filter" id="day_filter" wire:model.live="date" />
+
+    {{-- 3. Filter Hari --}}
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <x-label for="day_filter" value="Per Hari"></x-label>
+        <x-input type="date" id="day_filter" wire:model.live="day" class="min-w-[150px]" />
     </div>
+
+    {{-- 4. FILTER DIVISI --}}
     <x-select id="division" wire:model.live="division">
       <option value="">{{ __('Select Division') }}</option>
       @foreach (App\Models\Division::all() as $_division)
@@ -34,6 +68,8 @@
         </option>
       @endforeach
     </x-select>
+    
+    {{-- 5. FILTER JABATAN --}}
     <x-select id="jobTitle" wire:model.live="jobTitle">
       <option value="">{{ __('Select Job Title') }}</option>
       @foreach (App\Models\JobTitle::all() as $_jobTitle)
@@ -54,12 +90,26 @@
     </div>
     <div class="lg:hidden"></div>
     <x-secondary-button
-      href="{{ route('admin.attendances.report', ['month' => $month, 'week' => $week, 'date' => $date, 'division' => $division, 'jobTitle' => $jobTitle]) }}"
+      href="{{ route('admin.attendances.report', ['day' => $day,'month' => $month,'week' => $week,'division' => $division,'jobTitle' => $jobTitle]) }}"
+      target="_blank" 
       class="flex justify-center gap-2">
       Cetak Laporan
       <x-heroicon-o-printer class="h-5 w-5" />
-    </x-secondary-button>
+  </x-secondary-button>
   </div>
+
+  @if ($periodLabel)
+      <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p class="text-center font-bold text-blue-800 dark:text-blue-300 text-lg">
+              Periode: {{ $periodLabel }}
+          </p>
+      </div>
+  @endif
+
+  <div class="mb-3">
+    {{ $employees->links() }}
+  </div>
+
   <div class="overflow-x-scroll">
     <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
       <thead class="bg-gray-50 dark:bg-gray-900">
@@ -83,13 +133,11 @@
               </th>
             @endif
           @endif
-          @foreach ($dates as $date)
+          @foreach ($dates as $dateItem)
             @php
-              if (!$isPerDayFilter && $date->isSunday()) {
-                  // Minggu merah
+              if (!$isPerDayFilter && $dateItem->isSunday()) {
                   $textClass = 'text-red-500 dark:text-red-300';
-              } elseif (!$isPerDayFilter && $date->isFriday()) {
-                  // Jumat hijau
+              } elseif (!$isPerDayFilter && $dateItem->isFriday()) {
                   $textClass = 'text-green-500 dark:text-green-300';
               } else {
                   $textClass = 'text-gray-500 dark:text-gray-300';
@@ -100,7 +148,7 @@
               @if ($isPerDayFilter)
                 Status
               @else
-                {{ $date->format('d/m') }}
+                {{ $dateItem->format('d/m') }}
               @endif
             </th>
           @endforeach
@@ -170,13 +218,11 @@
               $sickCount = 0;
               $absentCount = 0;
             @endphp
-            @foreach ($dates as $date)
-              @php
-                $isWeekend = $date->isWeekend();
-                $attendance = $attendances->firstWhere(fn($v, $k) => $v['date'] === $date->format('Y-m-d'));
-                $status = ($attendance ?? [
-                    'status' => $isWeekend || !$date->isPast() ? '-' : 'absent',
-                ])['status'];
+            @if (count($dates) > 0)
+              @foreach ($dates as $dateItem)
+                @php
+                  $attendance = $attendances->firstWhere(fn($v, $k) => $v['date'] === $dateItem->format('Y-m-d'));
+                  $status = $attendance ? $attendance['status'] : 'absent';
                 switch ($status) {
                     case 'present':
                         $shortStatus = 'H';
@@ -229,7 +275,13 @@
                   {{ $isPerDayFilter ? __($status) : $shortStatus }}
                 </td>
               @endif
-            @endforeach
+              @endforeach
+            @else
+              {{-- Jika tidak ada tanggal (tidak ada data absensi sama sekali), hitung sebagai 1 absent --}}
+              @php
+                $absentCount = 1;
+              @endphp
+            @endif
 
             {{-- Waktu masuk/keluar --}}
             @if ($isPerDayFilter)

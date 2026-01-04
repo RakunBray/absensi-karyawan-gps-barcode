@@ -3,6 +3,7 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use App\Notifications\AccountApproved;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
@@ -28,7 +29,7 @@ class CreateNewUser implements CreatesNewUsers
                 : '',
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name'              => $input['name'],
             'nip'               => $input['nip'],
             'email'             => $input['email'],
@@ -39,7 +40,16 @@ class CreateNewUser implements CreatesNewUsers
             'password'          => Hash::make($input['password']),
             'group'             => 'user',
             'status'            => 'pending',
-            'email_verified_at' => null, // 🔒 BELUM AKTIF
+            'email_verified_at' => null,
         ]);
+
+        try {
+            $user->notify(new \App\Notifications\NewUserRegistered($user));
+            $user->notify(new \App\Notifications\AccountPendingApproval());
+        } catch (\Exception $e) {
+            // Silently fail notification if mail is not configured, but keep user created.
+        }
+
+        return $user;
     }
 }

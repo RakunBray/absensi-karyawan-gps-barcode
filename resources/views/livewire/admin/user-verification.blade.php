@@ -1,112 +1,197 @@
 <div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-2xl font-bold mb-6">Verifikasi Akun Karyawan</h2>
+  <div class="mb-4 flex-col items-center gap-5 sm:flex-row md:flex md:justify-between lg:mr-4">
+    <h3 class="mb-4 text-lg font-semibold leading-tight text-gray-800 dark:text-gray-200 md:mb-0">
+      Verifikasi Akun Karyawan
+    </h3>
+  </div>
 
-        @if (session()->has('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if (session()->has('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                {{ session('error') }}
-            </div>
-        @endif
-
-        <!-- Pending Users -->
-        <div class="mb-8">
-            <h3 class="text-xl font-semibold mb-4">Akun Menunggu Persetujuan</h3>
-            @if($pendingUsers->count() > 0)
-                <div class="space-y-4">
-                    @foreach($pendingUsers as $user)
-                        <div class="border rounded-lg p-4 bg-yellow-50">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <h4 class="font-bold">{{ $user->name }}</h4>
-                                    <p class="text-sm text-gray-600">{{ $user->email }} | {{ $user->phone }}</p>
-                                    <p class="text-sm text-gray-500">NIP: {{ $user->nip }}</p>
-                                </div>
-                                <div class="space-x-2">
-                                    <button wire:click="approveUser({{ $user->id }})" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                                        Setujui
-                                    </button>
-                                    <button wire:click="rejectUser({{ $user->id }})" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                                        Tolak
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-gray-500">Tidak ada akun menunggu persetujuan.</p>
-            @endif
-        </div>
-
-        <!-- Approved Users -->
-        <div class="mb-8">
-            <h3 class="text-xl font-semibold mb-4">Akun Disetujui</h3>
-            @if($approvedUsers->count() > 0)
-                <div class="space-y-4">
-                    @foreach($approvedUsers as $user)
-                        <div class="border rounded-lg p-4 bg-green-50">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <h4 class="font-bold">{{ $user->name }}</h4>
-                                    <p class="text-sm text-gray-600">{{ $user->email }} | {{ $user->phone }}</p>
-                                    <p class="text-sm text-gray-500">NIP: {{ $user->nip }}</p>
-                                    <p class="text-sm {{ $user->email_verified_at ? 'text-green-600' : 'text-red-600' }}">
-                                        Email: {{ $user->email_verified_at ? 'Terverifikasi' : 'Belum Terverifikasi' }}
-                                    </p>
-                                </div>
-                                <div class="space-x-2">
-                                    @if(!$user->email_verified_at)
-                                        <button wire:click="verifyUser({{ $user->id }})" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                                            Verifikasi Email
-                                        </button>
-                                    @endif
-                                    <button wire:click="deactivateUser({{ $user->id }})" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
-                                        Nonaktifkan
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-gray-500">Tidak ada akun disetujui.</p>
-            @endif
-        </div>
-
-        <!-- Rejected Users -->
-        <div>
-            <h3 class="text-xl font-semibold mb-4">Akun Ditolak</h3>
-            @if($rejectedUsers->count() > 0)
-                <div class="space-y-4">
-                    @foreach($rejectedUsers as $user)
-                        <div class="border rounded-lg p-4 bg-red-50">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <h4 class="font-bold">{{ $user->name }}</h4>
-                                    <p class="text-sm text-gray-600">{{ $user->email }} | {{ $user->phone }}</p>
-                                    <p class="text-sm text-gray-500">NIP: {{ $user->nip }}</p>
-                                </div>
-                                <div class="space-x-2">
-                                    <button wire:click="approveUser({{ $user->id }})" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                                        Setujui
-                                    </button>
-                                    <button wire:click="deleteUser({{ $user->id }})" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                                        Hapus
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <p class="text-gray-500">Tidak ada akun ditolak.</p>
-            @endif
-        </div>
+  <div class="space-y-8">
+    <!-- Pending Users -->
+    <div>
+      <div class="mb-4 flex items-center justify-between">
+        <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">
+          Menunggu Persetujuan
+          <span class="ml-2 rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+            {{ $pendingUsers->count() }}
+          </span>
+        </h4>
+      </div>
+      
+      <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm dark:border-gray-700">
+        <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Nama / NIP</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Kontak</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Status</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+            @forelse($pendingUsers as $user)
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="px-6 py-4">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->name }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">NIP: {{ $user->nip ?? '-' }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900 dark:text-white">{{ $user->email }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ $user->phone }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300">
+                    Pending
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right text-sm font-medium">
+                  <div class="flex justify-end gap-2">
+                    <x-button wire:click="approveUser('{{ $user->id }}')" class="bg-green-600 hover:bg-green-700">
+                      Setujui
+                    </x-button>
+                    <x-danger-button wire:click="rejectUser('{{ $user->id }}')">
+                      Tolak
+                    </x-danger-button>
+                  </div>
+                </td>
+              </tr>
+            @empty
+              <tr>
+                <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                  Tidak ada akun menunggu persetujuan
+                </td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
     </div>
+
+    <!-- Approved Users -->
+    <div>
+      <div class="mb-4 flex items-center justify-between">
+        <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">
+          Disetujui
+          <span class="ml-2 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300">
+            {{ $approvedUsers->count() }}
+          </span>
+        </h4>
+      </div>
+
+      <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm dark:border-gray-700">
+        <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Nama / NIP</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Kontak</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Status Email</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+            @forelse($approvedUsers as $user)
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="px-6 py-4">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->name }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">NIP: {{ $user->nip ?? '-' }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900 dark:text-white">{{ $user->email }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ $user->phone }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  @if($user->email_verified_at)
+                    <span class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800 dark:bg-green-900/50 dark:text-green-300">
+                      Terverifikasi
+                    </span>
+                  @else
+                    <span class="inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800 dark:bg-red-900/50 dark:text-red-300">
+                      Belum Verifikasi
+                    </span>
+                  @endif
+                </td>
+                <td class="px-6 py-4 text-right text-sm font-medium">
+                  <div class="flex justify-end gap-2">
+                    @if(!$user->email_verified_at)
+                      <x-button wire:click="verifyUser('{{ $user->id }}')" class="bg-blue-600 hover:bg-blue-700 text-xs">
+                        Verif Email
+                      </x-button>
+                    @endif
+                    <x-secondary-button wire:click="deactivateUser('{{ $user->id }}')">
+                      Nonaktifkan
+                    </x-secondary-button>
+                  </div>
+                </td>
+              </tr>
+            @empty
+              <tr>
+                <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                  Tidak ada akun disetujui
+                </td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Rejected Users -->
+    <div>
+      <div class="mb-4 flex items-center justify-between">
+        <h4 class="text-md font-medium text-gray-700 dark:text-gray-300">
+          Ditolak
+          <span class="ml-2 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-300">
+            {{ $rejectedUsers->count() }}
+          </span>
+        </h4>
+      </div>
+
+      <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm dark:border-gray-700">
+        <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Nama / NIP</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Kontak</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Status</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+            @forelse($rejectedUsers as $user)
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="px-6 py-4">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->name }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">NIP: {{ $user->nip ?? '-' }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-gray-900 dark:text-white">{{ $user->email }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ $user->phone }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800 dark:bg-red-900/50 dark:text-red-300">
+                    Ditolak
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right text-sm font-medium">
+                  <div class="flex justify-end gap-2">
+                    <x-button wire:click="approveUser('{{ $user->id }}')" class="bg-green-600 hover:bg-green-700">
+                      Setujui Kembali
+                    </x-button>
+                    <x-danger-button wire:click="deleteUser('{{ $user->id }}')">
+                      Hapus
+                    </x-danger-button>
+                  </div>
+                </td>
+              </tr>
+            @empty
+              <tr>
+                <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                  Tidak ada akun ditolak
+                </td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>

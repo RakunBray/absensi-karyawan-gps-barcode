@@ -84,13 +84,16 @@ class EmployeeComponent extends Component
     {
         $user = User::where('group', 'user')->findOrFail($id);
 
-        if ($user->email_verified_at) {
+        if ($user->email_verified_at && $user->status === 'approved') {
             return;
         }
 
         $user->update([
             'email_verified_at' => now(),
+            'status' => 'approved',
         ]);
+
+        $user->notify(new \App\Notifications\AccountApproved());
 
         $this->banner('Akun karyawan berhasil diverifikasi.');
     }
@@ -101,6 +104,7 @@ class EmployeeComponent extends Component
 
         $user->update([
             'email_verified_at' => null,
+            'status' => 'pending',
         ]);
 
         $this->banner('Akun karyawan berhasil dinonaktifkan.');

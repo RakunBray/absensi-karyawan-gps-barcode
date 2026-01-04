@@ -9,6 +9,21 @@ use Illuminate\Support\Facades\Auth;
 
 class UserAttendanceController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/apply-leave",
+     *     tags={"User - Attendance"},
+     *     summary="Form pengajuan cuti/izin",
+     *     description="Menampilkan form untuk pengajuan cuti atau izin karyawan",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success - Returns HTML view"
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden - Account not verified")
+     * )
+     */
     public function applyLeave()
     {
         // ❌ BLOK USER BELUM DIVERIFIKASI
@@ -23,6 +38,38 @@ class UserAttendanceController extends Controller
         return view('attendances.apply-leave', compact('attendance'));
     }
 
+    /**
+     * @OA\Post(
+     *     path="/apply-leave",
+     *     tags={"User - Attendance"},
+     *     summary="Submit pengajuan cuti/izin",
+     *     description="Menyimpan pengajuan cuti atau izin karyawan",
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"status", "note", "from"},
+     *                 @OA\Property(property="status", type="string", enum={"excused", "sick"}, description="Jenis izin"),
+     *                 @OA\Property(property="note", type="string", maxLength=255, description="Keterangan"),
+     *                 @OA\Property(property="from", type="string", format="date", description="Tanggal mulai"),
+     *                 @OA\Property(property="to", type="string", format="date", description="Tanggal selesai (opsional)"),
+     *                 @OA\Property(property="attachment", type="string", format="binary", description="File lampiran (max 3MB)"),
+     *                 @OA\Property(property="lat", type="number", format="double", description="Latitude lokasi"),
+     *                 @OA\Property(property="lng", type="number", format="double", description="Longitude lokasi")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=302,
+     *         description="Redirect to home dengan flash message"
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden - Account not verified"),
+     *     @OA\Response(response=422, description="Validation error")
+     * )
+     */
     public function storeLeaveRequest(Request $request)
     {
         // ❌ BLOK USER BELUM DIVERIFIKASI
@@ -86,6 +133,20 @@ class UserAttendanceController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/attendance-history",
+     *     tags={"User - Attendance"},
+     *     summary="Riwayat absensi",
+     *     description="Menampilkan riwayat absensi karyawan",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success - Returns HTML view"
+     *     ),
+     *     @OA\Response(response=401, description="Unauthorized")
+     * )
+     */
     public function history()
     {
         return view('attendances.history');

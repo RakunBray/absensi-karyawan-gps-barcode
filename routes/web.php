@@ -43,6 +43,10 @@ Route::middleware([
         return redirect()->route('home');
     })->name('dashboard');
 
+    Route::get('/approval-pending', function () {
+        return view('auth.approval-pending');
+    })->name('approval.pending');
+
     /*
     |--------------------------------------------------------------------------
     | USER AREA (WAJIB SUDAH DIVERIFIKASI)

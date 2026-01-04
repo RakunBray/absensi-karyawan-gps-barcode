@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,7 +11,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasUlids;
     use HasApiTokens;
@@ -28,7 +29,7 @@ class User extends Authenticatable
         'email',
         'password',
         'raw_password',
-        'group',                    // kolom role / grup
+        'group',
         'status',
         'phone',
         'gender',
@@ -40,6 +41,7 @@ class User extends Authenticatable
         'division_id',
         'job_title_id',
         'profile_photo_path',
+        'email_verified_at',
     ];
 
     /**

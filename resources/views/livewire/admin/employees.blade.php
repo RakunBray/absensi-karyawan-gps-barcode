@@ -70,12 +70,15 @@
           <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">
             {{ __('Phone Number') }}
           </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">
+            {{ __('Status') }}
+          </th>
           <th scope="col"
             class="hidden px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 sm:table-cell">
             {{ __('City') }}
           </th>
-          <th scope="col" class="relative px-6 py-3">
-            <span class="sr-only">Actions</span>
+          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300">
+            Aksi
           </th>
         </tr>
       </thead>
@@ -108,18 +111,29 @@
               {{ $wireClick }}>
               {{ $user->phone }}
             </td>
+            <td class="{{ $class }} px-6 py-4 text-sm font-medium text-gray-900 dark:text-white"
+              {{ $wireClick }}>
+              @if ($user->email_verified_at)
+                <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">Aktif</span>
+              @else
+                <span class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">Belum Verifikasi</span>
+              @endif
+            </td>
             <td
               class="{{ $class }} hidden px-6 py-4 text-sm font-medium text-gray-900 dark:text-white sm:table-cell"
               {{ $wireClick }}>
               {{ $user->city }}
             </td>
-            <td class="relative flex justify-end gap-2 px-6 py-4">
-              <x-button wire:click="edit('{{ $user->id }}')">
-                Edit
-              </x-button>
-              <x-danger-button wire:click="confirmDeletion('{{ $user->id }}', '{{ $user->name }}')">
-                Delete
-              </x-danger-button>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <div class="flex justify-end gap-2">
+
+                <x-button wire:click="edit('{{ $user->id }}')">
+                  Edit
+                </x-button>
+                <x-danger-button wire:click="confirmDeletion('{{ $user->id }}', '{{ $user->name }}')">
+                  Delete
+                </x-danger-button>
+              </div>
             </td>
           </tr>
         @endforeach
@@ -632,27 +646,3 @@
     @endif
   </x-modal>
 </div>
-<td>
-  @if ($user->email_verified_at)
-    <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700">Aktif</span>
-  @else
-    <span class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">Belum Verifikasi</span>
-  @endif
-</td>
-
-<td class="flex gap-2 justify-end">
-  @if (!$user->email_verified_at)
-    <x-button wire:click="verify('{{ $user->id }}')" class="bg-green-600">
-      Verifikasi
-    </x-button>
-  @else
-    <x-secondary-button wire:click="deactivate('{{ $user->id }}')">
-      Nonaktifkan
-    </x-secondary-button>
-  @endif
-
-  <x-button wire:click="edit('{{ $user->id }}')">Edit</x-button>
-  <x-danger-button wire:click="confirmDeletion('{{ $user->id }}','{{ $user->name }}')">
-    Hapus
-  </x-danger-button>
-</td>

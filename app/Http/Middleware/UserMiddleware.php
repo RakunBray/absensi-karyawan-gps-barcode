@@ -18,6 +18,10 @@ class UserMiddleware
     {
         // Check if the user is authenticated and belongs to the 'user' group
         if (Auth::check() && Auth::user()->isUser) {
+            // Check if the user is verified/approved
+            if (Auth::user()->status !== 'approved') {
+                 return redirect()->route('approval.pending');
+            }
             return $next($request);
         }
 

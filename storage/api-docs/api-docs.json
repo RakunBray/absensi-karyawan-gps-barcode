@@ -1,0 +1,1333 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Absensi Karyawan GPS & Barcode API",
+        "description": "API Documentation untuk Sistem Absensi Karyawan dengan GPS dan Barcode Scanner",
+        "contact": {
+            "name": "Admin Absensi",
+            "email": "admin@absensi.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://my-default-host.com",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/admin/attendances": {
+            "get": {
+                "tags": [
+                    "Admin - Attendances"
+                ],
+                "summary": "Daftar absensi",
+                "description": "Menampilkan daftar semua data absensi karyawan",
+                "operationId": "3e3811fda0ba52d8e23527e8949812c6",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Attendance"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/attendances/report": {
+            "get": {
+                "tags": [
+                    "Admin - Attendances"
+                ],
+                "summary": "Generate laporan absensi",
+                "description": "Generate dan download laporan absensi dalam format PDF berdasarkan filter",
+                "operationId": "481ac2d268b5fb602e8208efc8372518",
+                "parameters": [
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "description": "Filter by month (format: Y-m, contoh: 2024-01)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "week",
+                        "in": "query",
+                        "description": "Filter by week (format: Y-W##, contoh: 2024-W01)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "division",
+                        "in": "query",
+                        "description": "Filter by division ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "jobTitle",
+                        "in": "query",
+                        "description": "Filter by job title ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns PDF file",
+                        "content": {
+                            "application/pdf": {}
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/barcodes": {
+            "get": {
+                "tags": [
+                    "Admin - Barcodes"
+                ],
+                "summary": "Daftar barcode",
+                "description": "Menampilkan daftar semua barcode lokasi absensi",
+                "operationId": "41cab5799658905af906ffde12e7d468",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Barcode"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Barcodes"
+                ],
+                "summary": "Store barcode baru",
+                "description": "Menyimpan barcode lokasi absensi baru",
+                "operationId": "64822efece4603e5ee757dbcc956786d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "value",
+                                    "lat",
+                                    "lng",
+                                    "radius"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Kantor Pusat"
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "example": "OFFICE_MAIN_001"
+                                    },
+                                    "lat": {
+                                        "type": "number",
+                                        "format": "double",
+                                        "example": -6.2088
+                                    },
+                                    "lng": {
+                                        "type": "number",
+                                        "format": "double",
+                                        "example": 106.8456
+                                    },
+                                    "radius": {
+                                        "type": "number",
+                                        "format": "double",
+                                        "example": 100
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "302": {
+                        "description": "Redirect to barcode list dengan flash message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/barcodes/{id}": {
+            "get": {
+                "tags": [
+                    "Admin - Barcodes"
+                ],
+                "summary": "Detail barcode",
+                "description": "Menampilkan detail barcode tertentu",
+                "operationId": "a90fabe6dbc584ce4ecd6589602f274f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Barcode ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Barcode"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Barcode not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/barcodes/create": {
+            "get": {
+                "tags": [
+                    "Admin - Barcodes"
+                ],
+                "summary": "Form create barcode",
+                "description": "Menampilkan form untuk membuat barcode baru",
+                "operationId": "c8a7d7c7e81894b43062111568eeaa87",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML form view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/barcodes/{barcode}/edit": {
+            "get": {
+                "tags": [
+                    "Admin - Barcodes"
+                ],
+                "summary": "Form edit barcode",
+                "description": "Menampilkan form untuk edit barcode",
+                "operationId": "14328cf39990d4ef6a718bfced09ca95",
+                "parameters": [
+                    {
+                        "name": "barcode",
+                        "in": "path",
+                        "description": "Barcode ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML form view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Barcode not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/barcodes/{barcode}": {
+            "put": {
+                "tags": [
+                    "Admin - Barcodes"
+                ],
+                "summary": "Update barcode",
+                "description": "Mengupdate informasi barcode lokasi absensi",
+                "operationId": "75f9a373e261f5229f4272ecab4677fa",
+                "parameters": [
+                    {
+                        "name": "barcode",
+                        "in": "path",
+                        "description": "Barcode ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "value",
+                                    "lat",
+                                    "lng",
+                                    "radius"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Kantor Cabang"
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "example": "OFFICE_BRANCH_002"
+                                    },
+                                    "lat": {
+                                        "type": "number",
+                                        "format": "double",
+                                        "example": -6.2088
+                                    },
+                                    "lng": {
+                                        "type": "number",
+                                        "format": "double",
+                                        "example": 106.8456
+                                    },
+                                    "radius": {
+                                        "type": "number",
+                                        "format": "double",
+                                        "example": 150
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "302": {
+                        "description": "Redirect to barcode list dengan flash message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Barcode not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/barcodes/{id}/download": {
+            "get": {
+                "tags": [
+                    "Admin - Barcodes"
+                ],
+                "summary": "Download barcode",
+                "description": "Download QR Code barcode sebagai file PNG",
+                "operationId": "b78686ca041e99c919cf767bf56b1e04",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Barcode ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns PNG file",
+                        "content": {
+                            "image/png": {}
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Barcode not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/barcodes/download/all": {
+            "get": {
+                "tags": [
+                    "Admin - Barcodes"
+                ],
+                "summary": "Download semua barcode",
+                "description": "Download semua QR Code barcode sebagai file ZIP",
+                "operationId": "2ce1d7e81207f8056087f021055dafba",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns ZIP file",
+                        "content": {
+                            "application/zip": {}
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "No barcodes found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/employees": {
+            "get": {
+                "tags": [
+                    "Admin - Employees"
+                ],
+                "summary": "Daftar karyawan",
+                "description": "Menampilkan daftar semua karyawan",
+                "operationId": "226b1a8c4a86f57827e52d2255b59d00",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/employees/{id}/verify": {
+            "post": {
+                "tags": [
+                    "Admin - Employees"
+                ],
+                "summary": "Verifikasi akun karyawan",
+                "description": "Mengaktifkan dan memverifikasi email karyawan",
+                "operationId": "d6a7170e5c278d40329c06a7bf554da9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID (ULID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Redirect back dengan flash message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/employees/{id}/deactivate": {
+            "post": {
+                "tags": [
+                    "Admin - Employees"
+                ],
+                "summary": "Nonaktifkan akun karyawan",
+                "description": "Menonaktifkan akun karyawan dengan menghapus email verification",
+                "operationId": "41909b0ba6a95bd918a071e53f43ccc2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID (ULID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Redirect back dengan flash message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/employees/{id}": {
+            "delete": {
+                "tags": [
+                    "Admin - Employees"
+                ],
+                "summary": "Hapus akun karyawan",
+                "description": "Menghapus akun karyawan secara permanen. Tidak dapat menghapus admin atau akun sendiri.",
+                "operationId": "42da6948a89b842d5aae59fd97faf984",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID (ULID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Redirect back dengan flash message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden - Cannot delete admin or self"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/import-export/users": {
+            "get": {
+                "tags": [
+                    "Admin - Import/Export"
+                ],
+                "summary": "Import/Export users",
+                "description": "Menampilkan halaman untuk import dan export data users",
+                "operationId": "7e1a617be2026f64c78ade094375e5b3",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/import-export/attendances": {
+            "get": {
+                "tags": [
+                    "Admin - Import/Export"
+                ],
+                "summary": "Import/Export attendances",
+                "description": "Menampilkan halaman untuk import dan export data absensi",
+                "operationId": "1c17e6312671cbe7fbbca2ca77a0e248",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/masterdata/division": {
+            "get": {
+                "tags": [
+                    "Admin - Master Data"
+                ],
+                "summary": "Master data divisi",
+                "description": "Menampilkan halaman manajemen master data divisi",
+                "operationId": "1f8439d9791cd5757e6146a1c25fbe27",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/masterdata/job-title": {
+            "get": {
+                "tags": [
+                    "Admin - Master Data"
+                ],
+                "summary": "Master data jabatan",
+                "description": "Menampilkan halaman manajemen master data jabatan",
+                "operationId": "a8e6490945943da56aaab742dcf312f8",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/masterdata/education": {
+            "get": {
+                "tags": [
+                    "Admin - Master Data"
+                ],
+                "summary": "Master data pendidikan",
+                "description": "Menampilkan halaman manajemen master data pendidikan",
+                "operationId": "ddbc79c5988758cf7fd389de83b08836",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/masterdata/shift": {
+            "get": {
+                "tags": [
+                    "Admin - Master Data"
+                ],
+                "summary": "Master data shift",
+                "description": "Menampilkan halaman manajemen master data shift kerja",
+                "operationId": "99fbcb4cbbad60dc2b26e5b2ad8add67",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/admin/masterdata/admin": {
+            "get": {
+                "tags": [
+                    "Admin - Master Data"
+                ],
+                "summary": "Master data admin",
+                "description": "Menampilkan halaman manajemen master data admin",
+                "operationId": "7813d09f775cc0198291186fd3793e41",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login untuk mendapatkan Sanctum token",
+                "description": "Authenticate user dan return bearer token untuk API authentication",
+                "operationId": "222b2625838e3c57e017987f73598fda",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abcdef123456..."
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error atau kredensial salah"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout dan revoke token",
+                "description": "Revoke current access token",
+                "operationId": "ad65cbbd4e9f201619eae184a5961a98",
+                "responses": {
+                    "200": {
+                        "description": "Logout successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged out successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/home": {
+            "get": {
+                "tags": [
+                    "User - Dashboard"
+                ],
+                "summary": "Dashboard user",
+                "description": "Menampilkan dashboard utama untuk karyawan",
+                "operationId": "57db05a8a6f7b699e797fbb12aef816e",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/apply-leave": {
+            "get": {
+                "tags": [
+                    "User - Attendance"
+                ],
+                "summary": "Form pengajuan cuti/izin",
+                "description": "Menampilkan form untuk pengajuan cuti atau izin karyawan",
+                "operationId": "45fe71691bdbe1b7a03dc353c19298b6",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden - Account not verified"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "User - Attendance"
+                ],
+                "summary": "Submit pengajuan cuti/izin",
+                "description": "Menyimpan pengajuan cuti atau izin karyawan",
+                "operationId": "8e5f5dd1b6741ae06ed100bcfc96e221",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "status",
+                                    "note",
+                                    "from"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "description": "Jenis izin",
+                                        "type": "string",
+                                        "enum": [
+                                            "excused",
+                                            "sick"
+                                        ]
+                                    },
+                                    "note": {
+                                        "description": "Keterangan",
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "from": {
+                                        "description": "Tanggal mulai",
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "to": {
+                                        "description": "Tanggal selesai (opsional)",
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "attachment": {
+                                        "description": "File lampiran (max 3MB)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "lat": {
+                                        "description": "Latitude lokasi",
+                                        "type": "number",
+                                        "format": "double"
+                                    },
+                                    "lng": {
+                                        "description": "Longitude lokasi",
+                                        "type": "number",
+                                        "format": "double"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "302": {
+                        "description": "Redirect to home dengan flash message"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden - Account not verified"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/attendance-history": {
+            "get": {
+                "tags": [
+                    "User - Attendance"
+                ],
+                "summary": "Riwayat absensi",
+                "description": "Menampilkan riwayat absensi karyawan",
+                "operationId": "40524c07bdc65c1f2b793dbfa263535c",
+                "responses": {
+                    "200": {
+                        "description": "Success - Returns HTML view"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "properties": {
+                    "id": {
+                        "description": "Common Swagger Schemas",
+                        "type": "string",
+                        "example": "01JKNSK1234567890"
+                    },
+                    "nip": {
+                        "type": "string",
+                        "example": "12345678"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "john@example.com"
+                    },
+                    "group": {
+                        "type": "string",
+                        "enum": [
+                            "user",
+                            "admin",
+                            "superadmin"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "approved"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "081234567890"
+                    },
+                    "gender": {
+                        "type": "string",
+                        "enum": [
+                            "male",
+                            "female"
+                        ]
+                    },
+                    "birth_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-01-01"
+                    },
+                    "birth_place": {
+                        "type": "string",
+                        "example": "Jakarta"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Jl. Example No. 123"
+                    },
+                    "city": {
+                        "type": "string",
+                        "example": "Jakarta"
+                    },
+                    "education_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "division_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "job_title_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "email_verified_at": {
+                        "type": "string",
+                        "format": "datetime",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "datetime"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "datetime"
+                    }
+                },
+                "type": "object"
+            },
+            "Attendance": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "string",
+                        "example": "01JKNSK1234567890"
+                    },
+                    "barcode_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-01-04"
+                    },
+                    "time_in": {
+                        "type": "string",
+                        "format": "time",
+                        "example": "08:00:00"
+                    },
+                    "time_out": {
+                        "type": "string",
+                        "format": "time",
+                        "example": "17:00:00",
+                        "nullable": true
+                    },
+                    "shift_id": {
+                        "type": "integer",
+                        "example": 1,
+                        "nullable": true
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "format": "double",
+                        "example": -6.2088
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 106.8456
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "present"
+                    },
+                    "note": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "attachment": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "datetime"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "datetime"
+                    }
+                },
+                "type": "object"
+            },
+            "Barcode": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Kantor Pusat"
+                    },
+                    "value": {
+                        "type": "string",
+                        "example": "OFFICE_MAIN_001"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "format": "double",
+                        "example": -6.2088
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 106.8456
+                    },
+                    "radius": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 100
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "datetime"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "datetime"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Enter your bearer token in the format: Bearer {token}",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Admin - Employees",
+            "description": "Manajemen karyawan"
+        },
+        {
+            "name": "Admin - Barcodes",
+            "description": "Manajemen barcode lokasi"
+        },
+        {
+            "name": "Admin - Attendances",
+            "description": "Manajemen absensi"
+        },
+        {
+            "name": "Admin - Master Data",
+            "description": "Manajemen master data"
+        },
+        {
+            "name": "Admin - Import/Export",
+            "description": "Import dan export data"
+        },
+        {
+            "name": "User - Dashboard",
+            "description": "Dashboard karyawan"
+        },
+        {
+            "name": "User - Attendance",
+            "description": "Absensi dan pengajuan izin"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        }
+    ]
+}
