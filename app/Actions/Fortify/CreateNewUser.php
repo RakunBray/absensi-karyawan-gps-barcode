@@ -16,7 +16,7 @@ class CreateNewUser implements CreatesNewUsers
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'nip' => ['required', 'string', 'max:50', 'unique:users,nip'],
+            'nip' => ['required', 'string', 'max:10', 'unique:users,nip'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'regex:/^08[0-9]{8,11}$/', 'unique:users,phone'],
             'gender' => ['required', 'in:male,female'],
@@ -38,6 +38,7 @@ class CreateNewUser implements CreatesNewUsers
             'address'           => $input['address'],
             'password'          => Hash::make($input['password']),
             'group'             => 'user',
+            'status'            => 'pending',
             'email_verified_at' => null, // 🔒 BELUM AKTIF
         ]);
     }

@@ -17,6 +17,9 @@ class AuthenticateLoginAttempt
         }
 
         if ($user && Hash::check($request->password, $user->password)) {
+            if ($user->status !== 'approved') {
+                return null; // Prevent login if not approved
+            }
             return $user;
         }
     }

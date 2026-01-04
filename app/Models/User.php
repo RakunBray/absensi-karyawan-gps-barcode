@@ -29,6 +29,7 @@ class User extends Authenticatable
         'password',
         'raw_password',
         'group',                    // kolom role / grup
+        'status',
         'phone',
         'gender',
         'birth_date',
@@ -103,11 +104,27 @@ class User extends Authenticatable
     }
 
     /**
-     * Accessor: $user->is_not_admin (kebalikan dari is_admin)
+     * Accessor: $user->is_approved
      */
-    public function getIsNotAdminAttribute(): bool
+    public function getIsApprovedAttribute(): bool
     {
-        return ! $this->is_admin;
+        return $this->status === 'approved';
+    }
+
+    /**
+     * Accessor: $user->is_pending
+     */
+    public function getIsPendingAttribute(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    /**
+     * Accessor: $user->is_rejected
+     */
+    public function getIsRejectedAttribute(): bool
+    {
+        return $this->status === 'rejected';
     }
 
     /**

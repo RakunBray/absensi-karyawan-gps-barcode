@@ -2,21 +2,20 @@
 @extends('layouts.guest-register')
 
 @section('content')
-    <div class="min-h-screen flex items-center justify-center px-4 py-8">
-        <div class="w-full max-w-4xl">
+    <div class="w-full max-w-4xl py-12">
 
-            <!-- Logo -->
-            <div class="flex justify-center mb-8">
-                <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl flex items-center justify-center text-5xl font-bold text-white shadow-2xl ring-8 ring-purple-500/30">
-                    M
-                </div>
+        <!-- Logo -->
+        <div class="flex justify-center mb-8">
+            <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-green-500 rounded-3xl flex items-center justify-center text-5xl font-bold text-white shadow-2xl ring-8 ring-blue-500/30">
+                <img src="/img/MBG.png" alt="Logo SPPG" class="w-16 h-16 rounded-3xl">
             </div>
+        </div>
 
             <!-- CARD RAPAT & SIMETRIS -->
             <div class="backdrop-blur-3xl bg-white/10 border border-white/30 rounded-3xl shadow-3xl p-8">
 
                 <h2 class="text-3xl font-bold text-white text-center mb-2">Daftar Akun Baru</h2>
-                <p class="text-center text-purple-200 text-sm mb-8">Buat akun Absensi MBG Anda</p>
+                <p class="text-center text-blue-200 text-sm mb-8">Buat akun Absensi SPPG Anda</p>
 
                 <x-validation-errors class="mb-6 text-red-400 text-center text-sm" />
 
@@ -29,32 +28,32 @@
                         <!-- Kiri -->
                         <div class="space-y-5">
                             <x-input type="text" name="name" :value="old('name')" required autofocus autocomplete="name"
-                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('name') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-purple-500/60 focus:border-purple-400 transition text-base shadow-lg"
+                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('name') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/60 focus:border-blue-400 transition text-base shadow-lg"
                                 placeholder="Nama Lengkap" />
                             @error('name') <p class="mt-1 text-red-400 text-xs">{{ $message }}</p> @enderror
 
                             <x-input type="text" name="nip" :value="old('nip')" required inputmode="numeric"
                                 oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('nip') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-purple-500/60 focus:border-purple-400 transition text-base shadow-lg"
+                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('nip') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/60 focus:border-blue-400 transition text-base shadow-lg"
                                 placeholder="NIP" />
                             @error('nip') <p class="mt-1 text-red-400 text-xs">{{ $message }}</p> @enderror
 
                             <x-input type="text" name="phone" :value="old('phone')" required inputmode="numeric"
                                 pattern="08[0-9]{8,11}" maxlength="13"
                                 oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/^0?/, '0').substring(0,13)"
-                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('phone') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-purple-500/60 focus:border-purple-400 transition text-base shadow-lg"
+                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('phone') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/60 focus:border-blue-400 transition text-base shadow-lg"
                                 placeholder="08xxxxxxxxxx" />
                             @error('phone') <p class="mt-1 text-red-400 text-xs">{{ $message }}</p> @enderror
 
                             <x-input type="text" name="city" :value="old('city')" required
-                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('city') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-purple-500/60 focus:border-purple-400 transition text-base shadow-lg"
+                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('city') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/60 focus:border-blue-400 transition text-base shadow-lg"
                                 placeholder="Kota" />
                             @error('city') <p class="mt-1 text-red-400 text-xs">{{ $message }}</p> @enderror
 
                             <!-- KATA SANDI — DI KIRI -->
                             <div class="relative">
                                 <x-input type="password" name="password" id="password" required autocomplete="new-password" minlength="8"
-                                    class="w-full px-6 py-4 pr-14 bg-black/60 border {{ $errors->has('password') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-purple-500/60 focus:border-purple-400 transition text-base shadow-lg"
+                                    class="w-full px-6 py-4 pr-14 bg-black/60 border {{ $errors->has('password') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/60 focus:border-blue-400 transition text-base shadow-lg"
                                     placeholder="Kata Sandi (min. 8 karakter)" />
                                 <button type="button" onclick="togglePass('password', this)"
                                     class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white">
@@ -68,12 +67,12 @@
                         <!-- Kanan -->
                         <div class="space-y-5">
                             <x-input type="email" name="email" :value="old('email')" required
-                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('email') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-purple-500/60 focus:border-purple-400 transition text-base shadow-lg"
+                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('email') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/60 focus:border-blue-400 transition text-base shadow-lg"
                                 placeholder="Email" />
                             @error('email') <p class="mt-1 text-red-400 text-xs">{{ $message }}</p> @enderror
 
                             <x-select name="gender" required
-                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('gender') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white focus:outline-none focus:ring-4 focus:ring-purple-500/60 focus:border-purple-400 transition text-base shadow-lg">
+                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('gender') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white focus:outline-none focus:ring-4 focus:ring-blue-500/60 focus:border-blue-400 transition text-base shadow-lg">
                                 <option value="" disabled {{ old('gender') ? '' : 'selected' }}>Jenis Kelamin</option>
                                 <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Laki-laki</option>
                                 <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Perempuan</option>
@@ -81,14 +80,14 @@
                             @error('gender') <p class="mt-1 text-red-400 text-xs">{{ $message }}</p> @enderror
 
                             <x-textarea name="address" :value="old('address')" required rows="4"
-                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('address') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-purple-500/60 focus:border-purple-400 transition text-base resize-none shadow-lg"
+                                class="w-full px-6 py-4 bg-black/60 border {{ $errors->has('address') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/60 focus:border-blue-400 transition text-base resize-none shadow-lg"
                                 placeholder="Alamat Lengkap"></x-textarea>
                             @error('address') <p class="mt-1 text-red-400 text-xs">{{ $message }}</p> @enderror
 
                             <!-- KONFIRMASI KATA SANDI — DI KANAN -->
                             <div class="relative">
                                 <x-input type="password" name="password_confirmation" id="password_confirmation" required
-                                    class="w-full px-6 py-4 pr-14 bg-black/60 border {{ $errors->has('password') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-purple-500/60 focus:border-purple-400 transition text-base shadow-lg"
+                                    class="w-full px-6 py-4 pr-14 bg-black/60 border {{ $errors->has('password') ? 'border-red-500' : 'border-white/30' }} rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/60 focus:border-blue-400 transition text-base shadow-lg"
                                     placeholder="Konfirmasi Kata Sandi" />
                                 <button type="button" onclick="togglePass('password_confirmation', this)"
                                     class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white">
@@ -102,13 +101,13 @@
                     <!-- Tombol & Link -->
                     <div class="mt-10 text-center space-y-6">
                         <button type="submit"
-                            class="w-full max-w-md mx-auto py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-lg font-bold rounded-full shadow-2xl transition hover:scale-105">
+                            class="w-full max-w-md mx-auto py-4 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white text-lg font-bold rounded-full shadow-2xl transition hover:scale-105">
                             Daftar Sekarang
                         </button>
 
                         <p class="text-gray-400 text-sm">
                             Sudah punya akun?
-                            <a href="{{ route('login') }}" class="text-purple-300 font-semibold hover:text-white underline">
+                            <a href="{{ route('login') }}" class="text-blue-300 font-semibold hover:text-white underline">
                                 Masuk di sini
                             </a>
                         </p>

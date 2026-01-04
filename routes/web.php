@@ -74,6 +74,9 @@ Route::middleware([
         Route::get('/dashboard', fn () => view('admin.dashboard'))
             ->name('admin.dashboard');
 
+        Route::get('/user-verification', fn () => view('admin.user-verification'))
+            ->name('admin.user-verification');
+
         /*
         |--------------------------------------------------------------------------
         | EMPLOYEE MANAGEMENT (VERIFIKASI DI SINI)

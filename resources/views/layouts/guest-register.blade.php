@@ -12,19 +12,23 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white antialiased">
+<body class="h-screen flex flex-col bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white antialiased">
 
     <!-- Animated Background Blob -->
     <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-40 -left-40 w-80 h-80 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob"></div>
-        <div class="absolute -bottom-40 -right-40 w-80 h-80 bg-pink-600 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div class="absolute -top-40 -left-40 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob"></div>
+        <div class="absolute -bottom-40 -right-40 w-80 h-80 bg-green-600 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
     </div>
 
 
-    <main class="relative z-10 flex items-center justify-center min-h-screen px-6">
+    <main class="flex-1 flex items-center justify-center px-6">
         @yield('content')
     </main>
+
+    <footer class="text-center text-gray-400 text-sm py-4">
+        © {{ date('Y') }} SPPG Corporation. All rights reserved.
+    </footer>
 
     @livewireScripts
 

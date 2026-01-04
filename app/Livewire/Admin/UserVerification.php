@@ -7,6 +7,31 @@ use App\Models\User;
 
 class UserVerification extends Component
 {
+    public function approveUser($userId)
+    {
+        $user = User::findOrFail($userId);
+
+        $user->update([
+            'status' => 'approved',
+        ]);
+
+        // Kirim email verifikasi setelah approved
+        $user->sendEmailVerificationNotification();
+
+        session()->flash('success', 'Akun berhasil disetujui dan email verifikasi dikirim.');
+    }
+
+    public function rejectUser($userId)
+    {
+        $user = User::findOrFail($userId);
+
+        $user->update([
+            'status' => 'rejected',
+        ]);
+
+        session()->flash('success', 'Akun berhasil ditolak.');
+    }
+
     public function verifyUser($userId)
     {
         $user = User::findOrFail($userId);
@@ -15,7 +40,7 @@ class UserVerification extends Component
             'email_verified_at' => now(),
         ]);
 
-        session()->flash('success', 'Akun berhasil diverifikasi.');
+        session()->flash('success', 'Email berhasil diverifikasi.');
     }
 
     public function deactivateUser($userId)
@@ -47,10 +72,9 @@ class UserVerification extends Component
     public function render()
     {
         return view('livewire.admin.user-verification', [
-            'users' => User::where('group', 'user')
-                ->orderByRaw('email_verified_at IS NOT NULL')
-                ->latest()
-                ->get(),
+            'pendingUsers' => User::where('status', 'pending')->latest()->get(),
+            'approvedUsers' => User::where('status', 'approved')->latest()->get(),
+            'rejectedUsers' => User::where('status', 'rejected')->latest()->get(),
         ]);
     }
 }
